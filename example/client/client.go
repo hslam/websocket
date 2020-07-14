@@ -1,10 +1,8 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"github.com/hslam/websocket"
-	"io"
 	"time"
 )
 
@@ -14,14 +12,14 @@ func main() {
 		panic(err)
 	}
 	defer conn.Close()
-	reader := bufio.NewReader(conn)
 	for i := 0; i < 3; i++ {
-		conn.Write([]byte("Hello websocket\n"))
-		message, err := reader.ReadString('\n')
-		if err != nil || err == io.EOF {
+		conn.WriteMessage([]byte("Hello websocket"))
+		var message string
+		err := conn.ReadMessage(&message)
+		if err != nil {
 			break
 		}
-		fmt.Print(message)
+		fmt.Println(message)
 		time.Sleep(time.Second)
 	}
 }

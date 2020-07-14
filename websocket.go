@@ -59,7 +59,7 @@ func Dial(address, path string) (*Conn, error) {
 
 type Serve func(*Conn)
 
-func (s Serve) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (serve Serve) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	conn := Accept(w, r)
-	s(conn)
+	serve(conn)
 }

@@ -1,10 +1,8 @@
 package main
 
 import (
-	"bufio"
 	"github.com/hslam/mux"
 	"github.com/hslam/websocket"
-	"io"
 	"log"
 	"net/http"
 	"strings"
@@ -20,12 +18,12 @@ func main() {
 }
 
 func ServeConn(conn *websocket.Conn) {
-	reader := bufio.NewReader(conn)
 	for {
-		message, err := reader.ReadString('\n')
-		if err != nil || err == io.EOF {
+		var message string
+		err := conn.ReadMessage(&message)
+		if err != nil {
 			break
 		}
-		conn.Write([]byte(strings.ToUpper(string(message))))
+		conn.WriteMessage(strings.ToUpper(string(message)))
 	}
 }

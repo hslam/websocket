@@ -17,12 +17,13 @@ const (
 )
 
 func server(conn net.Conn, key string) *Conn {
-	return &Conn{conn: conn, key: key}
+	var random = rand.New(rand.NewSource(time.Now().UnixNano()))
+	return &Conn{conn: conn, random: random, readBuffer: make([]byte, 1024*64), frameBuffer: make([]byte, 1024*64), key: key}
 }
 
 func client(conn net.Conn, address, path string) *Conn {
-	key := key()
-	return &Conn{isClient: true, conn: conn, key: key, address: address, path: path}
+	var random = rand.New(rand.NewSource(time.Now().UnixNano()))
+	return &Conn{isClient: true, conn: conn, random: random, readBuffer: make([]byte, 1024*64), frameBuffer: make([]byte, 1024*64), key: key(random), address: address, path: path}
 }
 func (c *Conn) handshake() error {
 	if c.isClient {
@@ -34,6 +35,7 @@ func (c *Conn) clientHandshake() error {
 	c.accept = accept(c.key)
 	reqHeader := "GET " + c.path + " HTTP/1.1\r\n"
 	reqHeader += "Host: " + c.address + "\r\n"
+	reqHeader += "Origin: *\r\n"
 	reqHeader += "Connection: Upgrade\r\n"
 	reqHeader += "Upgrade: websocket\r\n"
 	reqHeader += "Sec-WebSocket-Version: 13\r\n"
@@ -62,11 +64,10 @@ func (c *Conn) serverHandshake() error {
 	return err
 }
 
-func key() string {
+func key(random *rand.Rand) string {
 	b := make([]byte, 16)
-	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	for i := 0; i < 16; i++ {
-		b[i] = byte(r.Intn(255))
+		b[i] = byte(random.Intn(255))
 	}
 	return base64.StdEncoding.EncodeToString(b)
 }
