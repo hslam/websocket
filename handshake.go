@@ -8,6 +8,7 @@ import (
 	"math/rand"
 	"net"
 	"net/http"
+	"sync"
 	"time"
 )
 
@@ -18,12 +19,31 @@ const (
 
 func server(conn net.Conn, key string) *Conn {
 	var random = rand.New(rand.NewSource(time.Now().UnixNano()))
-	return &Conn{conn: conn, random: random, readBuffer: make([]byte, 1024*64), frameBuffer: make([]byte, 1024*64), key: key}
+	return &Conn{
+		conn:        conn,
+		writer:      conn,
+		random:      random,
+		readBuffer:  make([]byte, 1024*64),
+		frameBuffer: make([]byte, 1024*64),
+		framePool:   &sync.Pool{New: func() interface{} { return &frame{} }},
+		key:         key,
+	}
 }
 
 func client(conn net.Conn, address, path string) *Conn {
 	var random = rand.New(rand.NewSource(time.Now().UnixNano()))
-	return &Conn{isClient: true, conn: conn, random: random, readBuffer: make([]byte, 1024*64), frameBuffer: make([]byte, 1024*64), key: key(random), address: address, path: path}
+	return &Conn{
+		isClient:    true,
+		conn:        conn,
+		writer:      conn,
+		random:      random,
+		readBuffer:  make([]byte, 1024*64),
+		frameBuffer: make([]byte, 1024*64),
+		framePool:   &sync.Pool{New: func() interface{} { return &frame{} }},
+		key:         key(random),
+		address:     address,
+		path:        path,
+	}
 }
 func (c *Conn) handshake() error {
 	if c.isClient {

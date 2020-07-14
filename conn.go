@@ -1,8 +1,10 @@
 package websocket
 
 import (
+	"io"
 	"math/rand"
 	"net"
+	"sync"
 	"time"
 )
 
@@ -10,6 +12,7 @@ type Conn struct {
 	isClient    bool
 	random      *rand.Rand
 	conn        net.Conn
+	writer      io.Writer
 	key         string
 	accept      string
 	path        string
@@ -18,6 +21,7 @@ type Conn struct {
 	buffer      []byte
 	connBuffer  []byte
 	frameBuffer []byte
+	framePool   *sync.Pool
 }
 
 func (c *Conn) Read(b []byte) (n int, err error) {
@@ -35,22 +39,33 @@ func (c *Conn) Read(b []byte) (n int, err error) {
 	if err != nil {
 		return 0, err
 	}
-	if len(b) >= len(f.PayloadData) {
+	length := len(f.PayloadData)
+	if len(b) >= length {
 		copy(b, f.PayloadData)
-		return len(f.PayloadData), nil
+		c.putFrame(f)
+		return length, nil
 	}
 	copy(b, f.PayloadData[:len(b)])
 	c.connBuffer = append(c.connBuffer, f.PayloadData[len(b):]...)
+	c.putFrame(f)
 	return len(b), nil
 }
-
+func (c *Conn) read(b []byte) (n int, err error) {
+	return c.conn.Read(b)
+}
 func (c *Conn) Write(b []byte) (n int, err error) {
-	f := &frame{FIN: 1, Opcode: BinaryFrame, PayloadData: b}
+	f := c.getFrame()
+	f.FIN = 1
+	f.Opcode = BinaryFrame
+	f.PayloadData = b
 	err = c.writeFrame(f)
 	if err != nil {
 		return 0, err
 	}
 	return len(b), nil
+}
+func (c *Conn) write(b []byte) (n int, err error) {
+	return c.writer.Write(b)
 }
 
 func (c *Conn) Close() error {

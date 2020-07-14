@@ -13,7 +13,15 @@ const (
 	PongFrame         = 0xA
 )
 
+func (c *Conn) getFrame() *frame {
+	return c.framePool.Get().(*frame)
+}
+func (c *Conn) putFrame(f *frame) {
+	f.Reset()
+	c.framePool.Put(f)
+}
 func (c *Conn) readFrame() (f *frame, err error) {
+	f = c.getFrame()
 	for {
 		length := uint64(len(c.buffer))
 		var i uint64 = 0
@@ -21,7 +29,6 @@ func (c *Conn) readFrame() (f *frame, err error) {
 			if length < 3 {
 				break
 			}
-			f = &frame{}
 			var offset uint64
 			offset, err = f.Unmarshal(c.buffer)
 			if err != nil {
@@ -34,7 +41,7 @@ func (c *Conn) readFrame() (f *frame, err error) {
 			}
 		}
 		var n int
-		n, err = c.conn.Read(c.readBuffer)
+		n, err = c.read(c.readBuffer)
 		if err != nil {
 			return nil, err
 		}
@@ -54,7 +61,8 @@ func (c *Conn) writeFrame(f *frame) error {
 	if err != nil {
 		return err
 	}
-	c.conn.Write(data)
+	c.write(data)
+	c.putFrame(f)
 	return nil
 }
 
@@ -69,6 +77,10 @@ type frame struct {
 	ExtendedPayloadLength uint64
 	MaskingKey            []byte
 	PayloadData           []byte
+}
+
+func (f *frame) Reset() {
+	*f = frame{}
 }
 
 func (f *frame) Marshal(buf []byte) ([]byte, error) {
