@@ -1,5 +1,5 @@
 # websocket
-websocket protocol
+[RFC 6455](https://tools.ietf.org/html/rfc6455 "RFC 6455") - The WebSocket Protocol.
 ## Get started
 
 ### Install
