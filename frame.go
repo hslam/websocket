@@ -186,16 +186,14 @@ func (f *frame) Unmarshal(data []byte) (uint64, error) {
 			if uint64(len(data)) < offset+uint64(f.PayloadLength) {
 				return 0, nil
 			}
-			f.PayloadData = make([]byte, f.PayloadLength)
-			copy(f.PayloadData, data[2:2+f.PayloadLength])
+			f.PayloadData = data[2 : 2+f.PayloadLength]
 			offset += uint64(f.PayloadLength)
 			return offset, nil
 		}
 		if uint64(len(data)) < offset+uint64(f.ExtendedPayloadLength) {
 			return 0, nil
 		}
-		f.PayloadData = make([]byte, f.ExtendedPayloadLength)
-		copy(f.PayloadData, data[offset:offset+f.ExtendedPayloadLength])
+		f.PayloadData = data[offset : offset+f.ExtendedPayloadLength]
 		offset += uint64(f.ExtendedPayloadLength)
 		return offset, nil
 	}
@@ -203,10 +201,8 @@ func (f *frame) Unmarshal(data []byte) (uint64, error) {
 		if uint64(len(data)) < offset+4+uint64(f.PayloadLength) {
 			return 0, nil
 		}
-		f.MaskingKey = make([]byte, 4)
-		copy(f.MaskingKey, data[2:6])
-		f.PayloadData = make([]byte, f.PayloadLength)
-		copy(f.PayloadData, data[6:6+f.PayloadLength])
+		f.MaskingKey = data[2:6]
+		f.PayloadData = data[6 : 6+f.PayloadLength]
 		for i := 0; i < int(f.PayloadLength); i++ {
 			f.PayloadData[i] = f.PayloadData[i] ^ f.MaskingKey[i%4]
 		}
@@ -217,11 +213,9 @@ func (f *frame) Unmarshal(data []byte) (uint64, error) {
 	if uint64(len(data)) < offset+4+uint64(f.ExtendedPayloadLength) {
 		return 0, nil
 	}
-	f.MaskingKey = make([]byte, 4)
-	copy(f.MaskingKey, data[offset:offset+4])
+	f.MaskingKey = data[offset : offset+4]
 	offset += 4
-	f.PayloadData = make([]byte, f.ExtendedPayloadLength)
-	copy(f.PayloadData, data[offset:offset+f.ExtendedPayloadLength])
+	f.PayloadData = data[offset : offset+f.ExtendedPayloadLength]
 	for i := 0; i < int(f.ExtendedPayloadLength); i++ {
 		f.PayloadData[i] = f.PayloadData[i] ^ f.MaskingKey[i%4]
 	}
