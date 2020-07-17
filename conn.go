@@ -28,7 +28,7 @@ func (c *Conn) Read(b []byte) (n int, err error) {
 	if len(c.connBuffer) > 0 {
 		if len(b) >= len(c.connBuffer) {
 			copy(b, c.connBuffer)
-			c.connBuffer = c.connBuffer[len(b):]
+			c.connBuffer = c.connBuffer[len(c.connBuffer):]
 			return len(c.connBuffer), nil
 		}
 		copy(b, c.connBuffer[:len(b)])
