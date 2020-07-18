@@ -221,7 +221,6 @@ func (f *frame) Unmarshal(data []byte) (uint64, error) {
 	}
 	offset += uint64(f.ExtendedPayloadLength)
 	return offset, nil
-	return 0, nil
 }
 
 func maskingKey(random *rand.Rand) []byte {
