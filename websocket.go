@@ -1,3 +1,7 @@
+// Copyright (c) 2020 Meng Huang (mhboy@outlook.com)
+// This package is licensed under a MIT license that can be found in the LICENSE file.
+
+// Package websocket implements a client and server for the WebSocket protocol as specified in RFC 6455.
 package websocket
 
 import (
