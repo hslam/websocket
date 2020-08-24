@@ -5,9 +5,12 @@
 package websocket
 
 import (
+	"bufio"
+	"fmt"
 	"io"
 	"net"
 	"net/http"
+	"time"
 )
 
 func Upgrade(w http.ResponseWriter, r *http.Request) *Conn {
@@ -38,6 +41,46 @@ func Upgrade(w http.ResponseWriter, r *http.Request) *Conn {
 		return nil
 	}
 	return conn
+}
+
+func UpgradeConn(conn net.Conn) *Conn {
+	var b = bufio.NewReader(conn)
+	req, err := http.ReadRequest(b)
+	if err != nil {
+		return nil
+	}
+	res := &response{handlerHeader: req.Header, conn: conn}
+	return Upgrade(res, req)
+}
+
+type response struct {
+	handlerHeader http.Header
+	status        int
+	conn          net.Conn
+}
+
+func (w *response) Hijack() (net.Conn, *bufio.ReadWriter, error) {
+	return w.conn, nil, nil
+}
+
+func (w *response) Header() http.Header {
+	return w.handlerHeader
+}
+
+func (w *response) Write(data []byte) (n int, err error) {
+	h := make([]byte, 0, 1024)
+	h = append(h, fmt.Sprintf("HTTP/1.1 %03d %s\r\n", w.status, http.StatusText(w.status))...)
+	h = append(h, fmt.Sprintf("Date: %s\r\n", time.Now().UTC().Format(http.TimeFormat))...)
+	h = append(h, fmt.Sprintf("Content-Length: %d\r\n", len(data))...)
+	h = append(h, "Content-Type: text/plain; charset=utf-8\r\n"...)
+	h = append(h, "\r\n"...)
+	h = append(h, data...)
+	n, err = w.conn.Write(h)
+	return len(data), err
+}
+
+func (w *response) WriteHeader(code int) {
+	w.status = code
 }
 
 func Dial(address, path string) (*Conn, error) {
