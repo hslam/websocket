@@ -10,7 +10,7 @@ import (
 	"net/http"
 )
 
-func Accept(w http.ResponseWriter, r *http.Request) *Conn {
+func Upgrade(w http.ResponseWriter, r *http.Request) *Conn {
 	if r.Method != "GET" {
 		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 		w.WriteHeader(http.StatusMethodNotAllowed)
@@ -64,6 +64,6 @@ func Dial(address, path string) (*Conn, error) {
 type Handler func(*Conn)
 
 func (handler Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	conn := Accept(w, r)
+	conn := Upgrade(w, r)
 	handler(conn)
 }

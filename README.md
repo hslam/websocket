@@ -28,7 +28,7 @@ import (
 func main() {
 	m := mux.New()
 	m.HandleFunc("/upper", func(w http.ResponseWriter, r *http.Request) {
-		conn := websocket.Accept(w, r)
+		conn := websocket.Upgrade(w, r)
 		ServeConn(conn)
 	}).GET()
 	log.Fatal(http.ListenAndServe(":8080", m))
