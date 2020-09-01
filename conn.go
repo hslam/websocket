@@ -4,6 +4,7 @@
 package websocket
 
 import (
+	"github.com/hslam/autowriter"
 	"io"
 	"math/rand"
 	"net"
@@ -72,6 +73,9 @@ func (c *Conn) write(b []byte) (n int, err error) {
 }
 
 func (c *Conn) Close() error {
+	if w, ok := c.writer.(*autowriter.AutoWriter); ok {
+		w.Close()
+	}
 	return c.conn.Close()
 }
 
