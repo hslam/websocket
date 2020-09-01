@@ -4,7 +4,6 @@
 package websocket
 
 import (
-	"errors"
 	"math/rand"
 )
 
@@ -48,11 +47,8 @@ func (c *Conn) readFrame() (f *frame, err error) {
 		n, err = c.read(c.readBuffer)
 		if err != nil {
 			return nil, err
-		}
-		if n > 0 {
+		} else if n > 0 {
 			c.buffer = append(c.buffer, c.readBuffer[:n]...)
-		} else {
-			return nil, errors.New("read failed")
 		}
 	}
 	return
