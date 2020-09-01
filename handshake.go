@@ -48,12 +48,14 @@ func client(conn net.Conn, address, path string) *Conn {
 		path:        path,
 	}
 }
+
 func (c *Conn) handshake() error {
 	if c.isClient {
 		return c.clientHandshake()
 	}
 	return c.serverHandshake()
 }
+
 func (c *Conn) clientHandshake() error {
 	c.accept = accept(c.key)
 	reqHeader := "GET " + c.path + " HTTP/1.1\r\n"

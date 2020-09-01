@@ -15,6 +15,7 @@ type Batch interface {
 func (c *Conn) SetBatch(batch Batch) {
 	c.writer = autowriter.NewAutoWriter(c.writer, false, 65536, 4, batch)
 }
+
 func (c *Conn) ReadMessage(v interface{}) (err error) {
 	f, err := c.readFrame()
 	if err != nil {

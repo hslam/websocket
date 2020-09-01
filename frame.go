@@ -19,10 +19,12 @@ const (
 func (c *Conn) getFrame() *frame {
 	return c.framePool.Get().(*frame)
 }
+
 func (c *Conn) putFrame(f *frame) {
 	f.Reset()
 	c.framePool.Put(f)
 }
+
 func (c *Conn) readFrame() (f *frame, err error) {
 	f = c.getFrame()
 	for {
@@ -144,6 +146,7 @@ func (f *frame) Marshal(buf []byte) ([]byte, error) {
 	offset += uint64(len(f.PayloadData))
 	return buf[:offset], nil
 }
+
 func (f *frame) Unmarshal(data []byte) (uint64, error) {
 	var offset uint64
 	if uint64(len(data)) < offset+1 {

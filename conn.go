@@ -54,9 +54,11 @@ func (c *Conn) Read(b []byte) (n int, err error) {
 	c.putFrame(f)
 	return len(b), nil
 }
+
 func (c *Conn) read(b []byte) (n int, err error) {
 	return c.conn.Read(b)
 }
+
 func (c *Conn) Write(b []byte) (n int, err error) {
 	f := c.getFrame()
 	f.FIN = 1
@@ -68,6 +70,7 @@ func (c *Conn) Write(b []byte) (n int, err error) {
 	}
 	return len(b), nil
 }
+
 func (c *Conn) write(b []byte) (n int, err error) {
 	return c.writer.Write(b)
 }
