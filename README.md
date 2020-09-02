@@ -37,11 +37,11 @@ func main() {
 func ServeConn(conn *websocket.Conn) {
 	for {
 		var message string
-		err := conn.ReadMessage(&message)
+		err := conn.ReadMsg(&message)
 		if err != nil {
 			break
 		}
-		conn.WriteMessage(strings.ToUpper(string(message)))
+		conn.WriteMsg(strings.ToUpper(string(message)))
 	}
 }
 ```
@@ -63,9 +63,9 @@ func main() {
 	}
 	defer conn.Close()
 	for i := 0; i < 3; i++ {
-		conn.WriteMessage([]byte("Hello websocket"))
+		conn.WriteMsg([]byte("Hello websocket"))
 		var message string
-		err := conn.ReadMessage(&message)
+		err := conn.ReadMsg(&message)
 		if err != nil {
 			break
 		}

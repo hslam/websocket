@@ -20,10 +20,10 @@ func main() {
 func ServeConn(conn *websocket.Conn) {
 	for {
 		var message string
-		err := conn.ReadMessage(&message)
+		err := conn.ReadMsg(&message)
 		if err != nil {
 			break
 		}
-		conn.WriteMessage(strings.ToUpper(string(message)))
+		conn.WriteMsg(strings.ToUpper(string(message)))
 	}
 }

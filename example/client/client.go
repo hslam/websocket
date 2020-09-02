@@ -7,15 +7,15 @@ import (
 )
 
 func main() {
-	conn, err := websocket.Dial("127.0.0.1:8080", "/upper")
+	conn, err := websocket.Dial("tcp", "127.0.0.1:8080", "/upper", nil)
 	if err != nil {
 		panic(err)
 	}
 	defer conn.Close()
 	for i := 0; i < 3; i++ {
-		conn.WriteMessage([]byte("Hello websocket"))
+		conn.WriteMsg([]byte("Hello websocket"))
 		var message string
-		err := conn.ReadMessage(&message)
+		err := conn.ReadMsg(&message)
 		if err != nil {
 			break
 		}
