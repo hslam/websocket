@@ -8,15 +8,14 @@ import (
 	"github.com/hslam/autowriter"
 )
 
-type Batch interface {
-	Concurrency() int
+func (c *Conn) SetBatch(concurrency func() int) {
+	if concurrency == nil {
+		return
+	}
+	c.writer = autowriter.NewAutoWriter(c.writer, false, 65536, 4, concurrency)
 }
 
-func (c *Conn) SetBatch(batch Batch) {
-	c.writer = autowriter.NewAutoWriter(c.writer, false, 65536, 4, batch)
-}
-
-func (c *Conn) ReadMessage(v interface{}) (err error) {
+func (c *Conn) ReadMsg(v interface{}) (err error) {
 	f, err := c.readFrame()
 	if err != nil {
 		return err
@@ -34,7 +33,7 @@ func (c *Conn) ReadMessage(v interface{}) (err error) {
 	return errors.New("not supported")
 }
 
-func (c *Conn) WriteMessage(b interface{}) (err error) {
+func (c *Conn) WriteMsg(b interface{}) (err error) {
 	f := c.getFrame()
 	f.FIN = 1
 	switch data := b.(type) {
@@ -58,7 +57,7 @@ func (c *Conn) WriteMessage(b interface{}) (err error) {
 	return errors.New("not supported")
 }
 
-func (c *Conn) ReadBinaryMessage() (p []byte, err error) {
+func (c *Conn) ReadMessage() (p []byte, err error) {
 	f, err := c.readFrame()
 	if err != nil {
 		return nil, err
@@ -68,7 +67,7 @@ func (c *Conn) ReadBinaryMessage() (p []byte, err error) {
 	return
 }
 
-func (c *Conn) WriteBinaryMessage(b []byte) (err error) {
+func (c *Conn) WriteMessage(b []byte) (err error) {
 	f := c.getFrame()
 	f.FIN = 1
 	f.Opcode = BinaryFrame
