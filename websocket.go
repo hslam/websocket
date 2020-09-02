@@ -6,6 +6,7 @@ package websocket
 
 import (
 	"bufio"
+	"crypto/tls"
 	"fmt"
 	"io"
 	"net"
@@ -83,12 +84,20 @@ func (w *response) WriteHeader(code int) {
 	w.status = code
 }
 
-func Dial(address, path string) (*Conn, error) {
+func Dial(network, address, path string, config *tls.Config) (*Conn, error) {
 	var err error
-	var network = "tcp"
 	netConn, err := net.Dial(network, address)
 	if err != nil {
 		return nil, err
+	}
+	if config != nil {
+		config.ServerName = address
+		tlsConn := tls.Client(netConn, config)
+		if err = tlsConn.Handshake(); err != nil {
+			tlsConn.Close()
+			return nil, err
+		}
+		netConn = tlsConn
 	}
 	conn := client(netConn, address, path)
 	err = conn.handshake()
