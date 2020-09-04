@@ -61,7 +61,7 @@ type response struct {
 }
 
 func (w *response) Hijack() (net.Conn, *bufio.ReadWriter, error) {
-	return w.conn, nil, nil
+	return w.conn, bufio.NewReadWriter(bufio.NewReader(w.conn), bufio.NewWriter(w.conn)), nil
 }
 
 func (w *response) Header() http.Header {
