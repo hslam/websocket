@@ -13,6 +13,8 @@ import (
 )
 
 type Conn struct {
+	reading     sync.Mutex
+	writing     sync.Mutex
 	isClient    bool
 	random      *rand.Rand
 	conn        net.Conn
@@ -29,6 +31,8 @@ type Conn struct {
 }
 
 func (c *Conn) Read(b []byte) (n int, err error) {
+	c.reading.Lock()
+	defer c.reading.Unlock()
 	if len(c.connBuffer) > 0 {
 		if len(b) >= len(c.connBuffer) {
 			copy(b, c.connBuffer)
@@ -61,6 +65,8 @@ func (c *Conn) read(b []byte) (n int, err error) {
 }
 
 func (c *Conn) Write(b []byte) (n int, err error) {
+	c.writing.Lock()
+	defer c.writing.Unlock()
 	f := c.getFrame()
 	f.FIN = 1
 	f.Opcode = BinaryFrame

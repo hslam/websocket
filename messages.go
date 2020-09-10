@@ -12,10 +12,14 @@ func (c *Conn) SetBatch(concurrency func() int) {
 	if concurrency == nil {
 		return
 	}
+	c.writing.Lock()
+	defer c.writing.Unlock()
 	c.writer = autowriter.NewAutoWriter(c.writer, false, 65536, 4, concurrency)
 }
 
 func (c *Conn) ReadMsg(v interface{}) (err error) {
+	c.reading.Lock()
+	defer c.reading.Unlock()
 	f, err := c.readFrame()
 	if err != nil {
 		return err
@@ -34,6 +38,8 @@ func (c *Conn) ReadMsg(v interface{}) (err error) {
 }
 
 func (c *Conn) WriteMsg(b interface{}) (err error) {
+	c.writing.Lock()
+	defer c.writing.Unlock()
 	f := c.getFrame()
 	f.FIN = 1
 	switch data := b.(type) {
@@ -58,6 +64,8 @@ func (c *Conn) WriteMsg(b interface{}) (err error) {
 }
 
 func (c *Conn) ReadMessage() (p []byte, err error) {
+	c.reading.Lock()
+	defer c.reading.Unlock()
 	f, err := c.readFrame()
 	if err != nil {
 		return nil, err
@@ -68,6 +76,8 @@ func (c *Conn) ReadMessage() (p []byte, err error) {
 }
 
 func (c *Conn) WriteMessage(b []byte) (err error) {
+	c.writing.Lock()
+	defer c.writing.Unlock()
 	f := c.getFrame()
 	f.FIN = 1
 	f.Opcode = BinaryFrame
@@ -76,6 +86,8 @@ func (c *Conn) WriteMessage(b []byte) (err error) {
 }
 
 func (c *Conn) ReadTextMessage() (p string, err error) {
+	c.reading.Lock()
+	defer c.reading.Unlock()
 	f, err := c.readFrame()
 	if err != nil {
 		return "", err
@@ -86,6 +98,8 @@ func (c *Conn) ReadTextMessage() (p string, err error) {
 }
 
 func (c *Conn) WriteTextMessage(b string) (err error) {
+	c.writing.Lock()
+	defer c.writing.Unlock()
 	f := c.getFrame()
 	f.FIN = 1
 	f.Opcode = TextFrame
