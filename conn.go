@@ -9,6 +9,7 @@ import (
 	"math/rand"
 	"net"
 	"sync"
+	"sync/atomic"
 	"time"
 )
 
@@ -28,6 +29,7 @@ type Conn struct {
 	connBuffer  []byte
 	frameBuffer []byte
 	framePool   *sync.Pool
+	closed      int32
 }
 
 func (c *Conn) Read(b []byte) (n int, err error) {
@@ -83,6 +85,9 @@ func (c *Conn) write(b []byte) (n int, err error) {
 }
 
 func (c *Conn) Close() error {
+	if !atomic.CompareAndSwapInt32(&c.closed, 0, 1) {
+		return nil
+	}
 	if w, ok := c.writer.(*autowriter.AutoWriter); ok {
 		w.Close()
 	}
