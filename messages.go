@@ -20,6 +20,8 @@ func (c *Conn) SetBatch(concurrency func() int) {
 func (c *Conn) ReadMsg(v interface{}) (err error) {
 	c.reading.Lock()
 	defer c.reading.Unlock()
+	c.buffer = c.buffer[:0]
+	c.connBuffer = c.connBuffer[:0]
 	f, err := c.readFrame()
 	if err != nil {
 		return err
@@ -66,6 +68,8 @@ func (c *Conn) WriteMsg(b interface{}) (err error) {
 func (c *Conn) ReadMessage() (p []byte, err error) {
 	c.reading.Lock()
 	defer c.reading.Unlock()
+	c.buffer = c.buffer[:0]
+	c.connBuffer = c.connBuffer[:0]
 	f, err := c.readFrame()
 	if err != nil {
 		return nil, err
@@ -88,6 +92,8 @@ func (c *Conn) WriteMessage(b []byte) (err error) {
 func (c *Conn) ReadTextMessage() (p string, err error) {
 	c.reading.Lock()
 	defer c.reading.Unlock()
+	c.buffer = c.buffer[:0]
+	c.connBuffer = c.connBuffer[:0]
 	f, err := c.readFrame()
 	if err != nil {
 		return "", err
