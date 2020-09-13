@@ -11,7 +11,6 @@ import (
 	"math/rand"
 	"net"
 	"net/http"
-	"sync"
 	"time"
 )
 
@@ -22,30 +21,56 @@ const (
 
 func server(conn net.Conn, key string) *Conn {
 	var random = rand.New(rand.NewSource(time.Now().UnixNano()))
+	var readBufferSize = bufferSize
+	var writeBufferSize = bufferSize
+	readBufferSize += 14
+	writeBufferSize += 14
+	var lowMemory = false
+	var readBuffer []byte
+	var writeBuffer []byte
+	if !lowMemory {
+		readBuffer = make([]byte, readBufferSize)
+		writeBuffer = make([]byte, writeBufferSize)
+	}
 	return &Conn{
-		conn:        conn,
-		writer:      conn,
-		random:      random,
-		readBuffer:  make([]byte, 1024*64),
-		frameBuffer: make([]byte, 1024*64),
-		framePool:   &sync.Pool{New: func() interface{} { return &frame{} }},
-		key:         key,
+		conn:            conn,
+		writer:          conn,
+		random:          random,
+		lowMemory:       lowMemory,
+		readBufferSize:  readBufferSize,
+		writeBufferSize: writeBufferSize,
+		readBuffer:      readBuffer,
+		writeBuffer:     writeBuffer,
+		key:             key,
 	}
 }
 
 func client(conn net.Conn, address, path string) *Conn {
 	var random = rand.New(rand.NewSource(time.Now().UnixNano()))
+	var readBufferSize = bufferSize
+	var writeBufferSize = bufferSize
+	readBufferSize += 14
+	writeBufferSize += 14
+	var lowMemory = false
+	var readBuffer []byte
+	var writeBuffer []byte
+	if !lowMemory {
+		readBuffer = make([]byte, readBufferSize)
+		writeBuffer = make([]byte, writeBufferSize)
+	}
 	return &Conn{
-		isClient:    true,
-		conn:        conn,
-		writer:      conn,
-		random:      random,
-		readBuffer:  make([]byte, 1024*64),
-		frameBuffer: make([]byte, 1024*64),
-		framePool:   &sync.Pool{New: func() interface{} { return &frame{} }},
-		key:         key(random),
-		address:     address,
-		path:        path,
+		isClient:        true,
+		conn:            conn,
+		writer:          conn,
+		random:          random,
+		lowMemory:       lowMemory,
+		readBufferSize:  readBufferSize,
+		writeBufferSize: writeBufferSize,
+		readBuffer:      readBuffer,
+		writeBuffer:     writeBuffer,
+		key:             key(random),
+		address:         address,
+		path:            path,
 	}
 }
 

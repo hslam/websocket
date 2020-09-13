@@ -5,6 +5,8 @@ package websocket
 
 import (
 	"math/rand"
+	"sync"
+	"sync/atomic"
 )
 
 const (
@@ -16,16 +18,47 @@ const (
 	PongFrame         = 0xA
 )
 
+const (
+	bufferSize     = 65522
+	maxHeaderBytes = 14
+)
+
+var (
+	buffers   = sync.Map{}
+	assign    int32
+	framePool = &sync.Pool{New: func() interface{} { return &frame{} }}
+)
+
+func assignPool(size int) *sync.Pool {
+	for {
+		if p, ok := buffers.Load(size); ok {
+			return p.(*sync.Pool)
+		}
+		if atomic.CompareAndSwapInt32(&assign, 0, 1) {
+			var pool = &sync.Pool{New: func() interface{} {
+				return make([]byte, size)
+			}}
+			buffers.Store(size, pool)
+			atomic.StoreInt32(&assign, 0)
+			return pool
+		}
+	}
+}
+
 func (c *Conn) getFrame() *frame {
-	return c.framePool.Get().(*frame)
+	return framePool.Get().(*frame)
 }
 
 func (c *Conn) putFrame(f *frame) {
 	f.Reset()
-	c.framePool.Put(f)
+	framePool.Put(f)
 }
 
 func (c *Conn) readFrame() (f *frame, err error) {
+	var pool *sync.Pool
+	if c.lowMemory {
+		pool = assignPool(c.readBufferSize)
+	}
 	f = c.getFrame()
 	for {
 		length := uint64(len(c.buffer))
@@ -45,28 +78,69 @@ func (c *Conn) readFrame() (f *frame, err error) {
 				return
 			}
 		}
+		var readBuffer []byte
+		if c.lowMemory {
+			readBuffer = pool.Get().([]byte)
+			readBuffer = readBuffer[:cap(readBuffer)]
+		} else {
+			readBuffer = c.readBuffer
+		}
 		var n int
-		n, err = c.read(c.readBuffer)
+		n, err = c.read(readBuffer)
 		if err != nil {
+			if c.lowMemory {
+				pool.Put(readBuffer)
+			}
+			c.Close()
 			return nil, err
 		} else if n > 0 {
-			c.buffer = append(c.buffer, c.readBuffer[:n]...)
+			c.buffer = append(c.buffer, readBuffer[:n]...)
+			if c.lowMemory {
+				pool.Put(readBuffer)
+			}
 		}
 	}
 	return
 }
 
 func (c *Conn) writeFrame(f *frame) error {
+	var pool *sync.Pool
+	if c.lowMemory {
+		pool = assignPool(c.writeBufferSize)
+	}
 	if c.isClient {
 		f.Mask = 1
 		f.MaskingKey = maskingKey(c.random)
 	}
-	data, err := f.Marshal(nil)
+	var writeBuffer []byte
+	if c.lowMemory {
+		writeBuffer = pool.Get().([]byte)
+		writeBuffer = writeBuffer[:cap(writeBuffer)]
+	} else {
+		writeBuffer = c.writeBuffer
+	}
+	maxBytes := len(f.PayloadData) + maxHeaderBytes
+	if cap(writeBuffer) >= maxBytes {
+		writeBuffer = writeBuffer[:maxBytes]
+	} else {
+		writeBuffer = make([]byte, maxBytes)
+	}
+	data, err := f.Marshal(writeBuffer)
 	if err != nil {
+		if c.lowMemory {
+			pool.Put(writeBuffer)
+		} else {
+			c.writeBuffer = writeBuffer
+		}
 		return err
 	}
 	c.write(data)
 	c.putFrame(f)
+	if c.lowMemory {
+		pool.Put(writeBuffer)
+	} else {
+		c.writeBuffer = writeBuffer
+	}
 	return nil
 }
 

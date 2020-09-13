@@ -14,22 +14,24 @@ import (
 )
 
 type Conn struct {
-	reading     sync.Mutex
-	writing     sync.Mutex
-	isClient    bool
-	random      *rand.Rand
-	conn        net.Conn
-	writer      io.Writer
-	key         string
-	accept      string
-	path        string
-	address     string
-	readBuffer  []byte
-	buffer      []byte
-	connBuffer  []byte
-	frameBuffer []byte
-	framePool   *sync.Pool
-	closed      int32
+	reading         sync.Mutex
+	writing         sync.Mutex
+	isClient        bool
+	random          *rand.Rand
+	conn            net.Conn
+	writer          io.Writer
+	key             string
+	accept          string
+	path            string
+	address         string
+	lowMemory       bool
+	readBufferSize  int
+	readBuffer      []byte
+	writeBufferSize int
+	writeBuffer     []byte
+	buffer          []byte
+	connBuffer      []byte
+	closed          int32
 }
 
 func (c *Conn) Read(b []byte) (n int, err error) {
@@ -91,6 +93,11 @@ func (c *Conn) Close() error {
 	if w, ok := c.writer.(*autowriter.AutoWriter); ok {
 		w.Close()
 	}
+	c.writer = nil
+	c.readBuffer = nil
+	c.writeBuffer = nil
+	c.buffer = nil
+	c.connBuffer = nil
 	return c.conn.Close()
 }
 
