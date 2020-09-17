@@ -41,7 +41,7 @@ func Upgrade(w http.ResponseWriter, r *http.Request) *Conn {
 	if err != nil {
 		return nil
 	}
-	conn := server(netConn, key)
+	conn := server(netConn, false, key)
 	err = conn.handshake()
 	if err != nil {
 		return nil
@@ -105,7 +105,7 @@ func Dial(network, address, path string, config *tls.Config) (*Conn, error) {
 		}
 		netConn = tlsConn
 	}
-	conn := client(netConn, address, path)
+	conn := client(netConn, false, address, path)
 	err = conn.handshake()
 	if err != nil {
 		conn.Close()

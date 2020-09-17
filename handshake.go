@@ -19,16 +19,15 @@ const (
 	status = "101 Switching Protocols"
 )
 
-func server(conn net.Conn, key string) *Conn {
+func server(conn net.Conn, shared bool, key string) *Conn {
 	var random = rand.New(rand.NewSource(time.Now().UnixNano()))
 	var readBufferSize = bufferSize
 	var writeBufferSize = bufferSize
 	readBufferSize += 14
 	writeBufferSize += 14
-	var lowMemory = false
 	var readBuffer []byte
 	var writeBuffer []byte
-	if !lowMemory {
+	if !shared {
 		readBuffer = make([]byte, readBufferSize)
 		writeBuffer = make([]byte, writeBufferSize)
 	}
@@ -36,7 +35,7 @@ func server(conn net.Conn, key string) *Conn {
 		conn:            conn,
 		writer:          conn,
 		random:          random,
-		lowMemory:       lowMemory,
+		shared:          shared,
 		readBufferSize:  readBufferSize,
 		writeBufferSize: writeBufferSize,
 		readBuffer:      readBuffer,
@@ -45,16 +44,15 @@ func server(conn net.Conn, key string) *Conn {
 	}
 }
 
-func client(conn net.Conn, address, path string) *Conn {
+func client(conn net.Conn, shared bool, address, path string) *Conn {
 	var random = rand.New(rand.NewSource(time.Now().UnixNano()))
 	var readBufferSize = bufferSize
 	var writeBufferSize = bufferSize
 	readBufferSize += 14
 	writeBufferSize += 14
-	var lowMemory = false
 	var readBuffer []byte
 	var writeBuffer []byte
-	if !lowMemory {
+	if !shared {
 		readBuffer = make([]byte, readBufferSize)
 		writeBuffer = make([]byte, writeBufferSize)
 	}
@@ -63,7 +61,7 @@ func client(conn net.Conn, address, path string) *Conn {
 		conn:            conn,
 		writer:          conn,
 		random:          random,
-		lowMemory:       lowMemory,
+		shared:          shared,
 		readBufferSize:  readBufferSize,
 		writeBufferSize: writeBufferSize,
 		readBuffer:      readBuffer,

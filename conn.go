@@ -24,7 +24,7 @@ type Conn struct {
 	accept          string
 	path            string
 	address         string
-	lowMemory       bool
+	shared          bool
 	readBufferSize  int
 	readBuffer      []byte
 	writeBufferSize int
