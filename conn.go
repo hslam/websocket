@@ -4,7 +4,7 @@
 package websocket
 
 import (
-	"github.com/hslam/autowriter"
+	"github.com/hslam/writer"
 	"io"
 	"math/rand"
 	"net"
@@ -90,7 +90,7 @@ func (c *Conn) Close() error {
 	if !atomic.CompareAndSwapInt32(&c.closed, 0, 1) {
 		return nil
 	}
-	if w, ok := c.writer.(*autowriter.AutoWriter); ok {
+	if w, ok := c.writer.(*writer.Writer); ok {
 		w.Close()
 	}
 	c.writer = nil

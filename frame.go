@@ -91,7 +91,6 @@ func (c *Conn) readFrame() (f *frame, err error) {
 			if c.lowMemory {
 				pool.Put(readBuffer)
 			}
-			c.Close()
 			return nil, err
 		} else if n > 0 {
 			c.buffer = append(c.buffer, readBuffer[:n]...)

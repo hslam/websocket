@@ -5,16 +5,16 @@ package websocket
 
 import (
 	"errors"
-	"github.com/hslam/autowriter"
+	"github.com/hslam/writer"
 )
 
-func (c *Conn) SetBatch(concurrency func() int) {
+func (c *Conn) SetConcurrency(concurrency func() int) {
 	if concurrency == nil {
 		return
 	}
 	c.writing.Lock()
 	defer c.writing.Unlock()
-	c.writer = autowriter.NewAutoWriter(c.writer, false, 65536, 4, concurrency)
+	c.writer = writer.NewWriter(c.writer, concurrency, 65536, false)
 }
 
 func (c *Conn) ReadMsg(v interface{}) (err error) {
