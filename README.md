@@ -15,7 +15,7 @@ import "github.com/hslam/websocket"
 
 **server.go**
 ```go
-package main
+ackage main
 
 import (
 	"github.com/hslam/mux"
@@ -28,13 +28,13 @@ import (
 func main() {
 	m := mux.New()
 	m.HandleFunc("/upper", func(w http.ResponseWriter, r *http.Request) {
-		conn := websocket.Upgrade(w, r)
-		ServeConn(conn)
+		conn := websocket.UpgradeHTTP(w, r)
+		Serve(conn)
 	}).GET()
 	log.Fatal(http.ListenAndServe(":8080", m))
 }
 
-func ServeConn(conn *websocket.Conn) {
+func Serve(conn *websocket.Conn) {
 	for {
 		var message string
 		err := conn.ReadMsg(&message)
@@ -57,7 +57,7 @@ import (
 )
 
 func main() {
-	conn, err := websocket.Dial("127.0.0.1:8080", "/upper")
+	conn, err := websocket.Dial("tcp", "127.0.0.1:8080", "/upper", nil)
 	if err != nil {
 		panic(err)
 	}

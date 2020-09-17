@@ -19,7 +19,7 @@ var pool = &sync.Pool{New: func() interface{} {
 	return make([]byte, 1024)
 }}
 
-func Upgrade(w http.ResponseWriter, r *http.Request) *Conn {
+func UpgradeHTTP(w http.ResponseWriter, r *http.Request) *Conn {
 	if r.Method != "GET" {
 		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 		w.WriteHeader(http.StatusMethodNotAllowed)
@@ -49,14 +49,14 @@ func Upgrade(w http.ResponseWriter, r *http.Request) *Conn {
 	return conn
 }
 
-func UpgradeConn(conn net.Conn) *Conn {
+func Upgrade(conn net.Conn) *Conn {
 	var b = bufio.NewReader(conn)
 	req, err := http.ReadRequest(b)
 	if err != nil {
 		return nil
 	}
 	res := &response{handlerHeader: req.Header, conn: conn}
-	return Upgrade(res, req)
+	return UpgradeHTTP(res, req)
 }
 
 type response struct {
@@ -122,6 +122,6 @@ func Dial(network, address, path string, config *tls.Config) (*Conn, error) {
 type Handler func(*Conn)
 
 func (handler Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	conn := Upgrade(w, r)
+	conn := UpgradeHTTP(w, r)
 	handler(conn)
 }

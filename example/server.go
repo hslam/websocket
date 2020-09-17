@@ -11,13 +11,13 @@ import (
 func main() {
 	m := mux.New()
 	m.HandleFunc("/upper", func(w http.ResponseWriter, r *http.Request) {
-		conn := websocket.Upgrade(w, r)
-		ServeConn(conn)
+		conn := websocket.UpgradeHTTP(w, r)
+		Serve(conn)
 	}).GET()
 	log.Fatal(http.ListenAndServe(":8080", m))
 }
 
-func ServeConn(conn *websocket.Conn) {
+func Serve(conn *websocket.Conn) {
 	for {
 		var message string
 		err := conn.ReadMsg(&message)
