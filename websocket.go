@@ -19,6 +19,7 @@ var pool = &sync.Pool{New: func() interface{} {
 	return make([]byte, 1024)
 }}
 
+// UpgradeHTTP upgrades the HTTP server connection to the WebSocket protocol.
 func UpgradeHTTP(w http.ResponseWriter, r *http.Request) *Conn {
 	if r.Method != "GET" {
 		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
@@ -49,6 +50,7 @@ func UpgradeHTTP(w http.ResponseWriter, r *http.Request) *Conn {
 	return conn
 }
 
+// Upgrade upgrades the net.Conn conn to the WebSocket protocol.
 func Upgrade(conn net.Conn) *Conn {
 	var b = bufio.NewReader(conn)
 	req, err := http.ReadRequest(b)
@@ -90,6 +92,7 @@ func (w *response) WriteHeader(code int) {
 	w.status = code
 }
 
+// Dial opens a new client connection to a WebSocket.
 func Dial(network, address, path string, config *tls.Config) (*Conn, error) {
 	var err error
 	netConn, err := net.Dial(network, address)
@@ -119,8 +122,10 @@ func Dial(network, address, path string, config *tls.Config) (*Conn, error) {
 	return conn, nil
 }
 
+// Handler represents a http.Handler.
 type Handler func(*Conn)
 
+// ServeHTTP implements the http.Handler interface for a WebSocket
 func (handler Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	conn := UpgradeHTTP(w, r)
 	handler(conn)

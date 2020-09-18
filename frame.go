@@ -10,12 +10,18 @@ import (
 )
 
 const (
+	// ContinuationFrame represents a WebSocket continuation frame.
 	ContinuationFrame = 0x0
-	TextFrame         = 0x1
-	BinaryFrame       = 0x2
-	CloseFrame        = 0x8
-	PingFrame         = 0x9
-	PongFrame         = 0xA
+	// TextFrame represents a WebSocket text frame.
+	TextFrame = 0x1
+	// BinaryFrame represents a WebSocket binary frame.
+	BinaryFrame = 0x2
+	// CloseFrame represents a WebSocket close frame.
+	CloseFrame = 0x8
+	// PingFrame represents a WebSocket ping frame.
+	PingFrame = 0x9
+	// PongFrame represents a WebSocket pong frame.
+	PongFrame = 0xA
 )
 
 const (

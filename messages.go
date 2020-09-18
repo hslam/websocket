@@ -8,6 +8,7 @@ import (
 	"github.com/hslam/writer"
 )
 
+// SetConcurrency sets a func concurrency.
 func (c *Conn) SetConcurrency(concurrency func() int) {
 	if concurrency == nil {
 		return
@@ -17,6 +18,7 @@ func (c *Conn) SetConcurrency(concurrency func() int) {
 	c.writer = writer.NewWriter(c.writer, concurrency, 65536, false)
 }
 
+// ReadMsg reads single frame from ws.
 func (c *Conn) ReadMsg(v interface{}) (err error) {
 	c.reading.Lock()
 	defer c.reading.Unlock()
@@ -39,6 +41,7 @@ func (c *Conn) ReadMsg(v interface{}) (err error) {
 	return errors.New("not supported")
 }
 
+// WriteMsg writes single frame to ws.
 func (c *Conn) WriteMsg(b interface{}) (err error) {
 	c.writing.Lock()
 	defer c.writing.Unlock()
@@ -65,6 +68,7 @@ func (c *Conn) WriteMsg(b interface{}) (err error) {
 	return errors.New("not supported")
 }
 
+// ReadMessage reads single message from ws.
 func (c *Conn) ReadMessage() (p []byte, err error) {
 	c.reading.Lock()
 	defer c.reading.Unlock()
@@ -79,6 +83,7 @@ func (c *Conn) ReadMessage() (p []byte, err error) {
 	return
 }
 
+// WriteMessage writes single message to ws.
 func (c *Conn) WriteMessage(b []byte) (err error) {
 	c.writing.Lock()
 	defer c.writing.Unlock()
@@ -89,6 +94,7 @@ func (c *Conn) WriteMessage(b []byte) (err error) {
 	return c.writeFrame(f)
 }
 
+// ReadTextMessage reads single text message from ws.
 func (c *Conn) ReadTextMessage() (p string, err error) {
 	c.reading.Lock()
 	defer c.reading.Unlock()
@@ -103,6 +109,7 @@ func (c *Conn) ReadTextMessage() (p string, err error) {
 	return
 }
 
+// WriteTextMessage writes single text message to ws.
 func (c *Conn) WriteTextMessage(b string) (err error) {
 	c.writing.Lock()
 	defer c.writing.Unlock()
