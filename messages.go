@@ -31,7 +31,7 @@ func (c *Conn) ReceiveMessage(v interface{}) (err error) {
 	}
 	switch data := v.(type) {
 	case *string:
-		*data = bytes2str(f.PayloadData)
+		*data = *(*string)(unsafe.Pointer(&f.PayloadData))
 		c.putFrame(f)
 		return nil
 	case *[]byte:
@@ -51,11 +51,11 @@ func (c *Conn) SendMessage(v interface{}) (err error) {
 	switch data := v.(type) {
 	case string:
 		f.Opcode = TextFrame
-		f.PayloadData = str2bytes(data)
+		f.PayloadData = []byte(data)
 		return c.writeFrame(f)
 	case *string:
 		f.Opcode = TextFrame
-		f.PayloadData = str2bytes(*data)
+		f.PayloadData = []byte(*data)
 		return c.writeFrame(f)
 	case []byte:
 		f.Opcode = BinaryFrame
@@ -105,7 +105,7 @@ func (c *Conn) ReadTextMessage() (p string, err error) {
 	if err != nil {
 		return "", err
 	}
-	p = bytes2str(f.PayloadData)
+	p = *(*string)(unsafe.Pointer(&f.PayloadData))
 	c.putFrame(f)
 	return
 }
@@ -117,16 +117,6 @@ func (c *Conn) WriteTextMessage(b string) (err error) {
 	f := c.getFrame()
 	f.FIN = 1
 	f.Opcode = TextFrame
-	f.PayloadData = str2bytes(b)
+	f.PayloadData = []byte(b)
 	return c.writeFrame(f)
-}
-
-func str2bytes(s string) []byte {
-	x := (*[2]uintptr)(unsafe.Pointer(&s))
-	h := [3]uintptr{x[0], x[1], x[1]}
-	return *(*[]byte)(unsafe.Pointer(&h))
-}
-
-func bytes2str(b []byte) string {
-	return *(*string)(unsafe.Pointer(&b))
 }

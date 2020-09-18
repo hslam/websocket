@@ -13,7 +13,7 @@ func main() {
 	}
 	defer conn.Close()
 	for i := 0; i < 1; i++ {
-		conn.SendMessage([]byte("Hello World"))
+		conn.SendMessage("Hello World")
 		var message string
 		err := conn.ReceiveMessage(&message)
 		if err != nil {
