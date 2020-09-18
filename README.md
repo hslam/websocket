@@ -1,4 +1,6 @@
 # websocket
+[![GoDoc](https://godoc.org/github.com/hslam/websocket?status.svg)](https://godoc.org/github.com/hslam/websocket)
+
 Package websocket implements a client and server for the WebSocket protocol as specified in [RFC 6455](https://tools.ietf.org/html/rfc6455 "RFC 6455").
 
 ## Feature
