@@ -1,5 +1,10 @@
 # websocket
-[RFC 6455](https://tools.ietf.org/html/rfc6455 "RFC 6455") - The WebSocket Protocol.
+Package websocket implements a client and server for the WebSocket protocol as specified in [RFC 6455](https://tools.ietf.org/html/rfc6455 "RFC 6455").
+
+## Feature
+* Upgrade HTTP/Conn
+* TLS
+
 ## Get started
 
 ### Install
@@ -15,7 +20,7 @@ import "github.com/hslam/websocket"
 
 **server.go**
 ```go
-ackage main
+package main
 
 import (
 	"github.com/hslam/mux"
@@ -43,6 +48,7 @@ func Serve(conn *websocket.Conn) {
 		}
 		conn.WriteMsg(strings.ToUpper(string(message)))
 	}
+	conn.Close()
 }
 ```
 

@@ -26,4 +26,5 @@ func Serve(conn *websocket.Conn) {
 		}
 		conn.WriteMsg(strings.ToUpper(string(message)))
 	}
+	conn.Close()
 }
