@@ -12,10 +12,10 @@ func main() {
 		panic(err)
 	}
 	defer conn.Close()
-	for i := 0; i < 3; i++ {
-		conn.WriteMsg([]byte("Hello websocket"))
+	for i := 0; i < 1; i++ {
+		conn.SendMessage([]byte("Hello World"))
 		var message string
-		err := conn.ReadMsg(&message)
+		err := conn.ReceiveMessage(&message)
 		if err != nil {
 			break
 		}

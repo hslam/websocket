@@ -6,9 +6,10 @@ package websocket
 import (
 	"errors"
 	"github.com/hslam/writer"
+	"unsafe"
 )
 
-// SetConcurrency sets a func concurrency.
+// SetConcurrency sets a callback func concurrency for writer.
 func (c *Conn) SetConcurrency(concurrency func() int) {
 	if concurrency == nil {
 		return
@@ -18,8 +19,8 @@ func (c *Conn) SetConcurrency(concurrency func() int) {
 	c.writer = writer.NewWriter(c.writer, concurrency, 65536, false)
 }
 
-// ReadMsg reads single frame from ws.
-func (c *Conn) ReadMsg(v interface{}) (err error) {
+// ReceiveMessage receives single frame from ws, unmarshaled and stores in v.
+func (c *Conn) ReceiveMessage(v interface{}) (err error) {
 	c.reading.Lock()
 	defer c.reading.Unlock()
 	c.buffer = c.buffer[:0]
@@ -30,7 +31,7 @@ func (c *Conn) ReadMsg(v interface{}) (err error) {
 	}
 	switch data := v.(type) {
 	case *string:
-		*data = string(f.PayloadData)
+		*data = bytes2str(f.PayloadData)
 		c.putFrame(f)
 		return nil
 	case *[]byte:
@@ -41,20 +42,20 @@ func (c *Conn) ReadMsg(v interface{}) (err error) {
 	return errors.New("not supported")
 }
 
-// WriteMsg writes single frame to ws.
-func (c *Conn) WriteMsg(b interface{}) (err error) {
+// SendMessage sends v marshaled as single frame to ws.
+func (c *Conn) SendMessage(v interface{}) (err error) {
 	c.writing.Lock()
 	defer c.writing.Unlock()
 	f := c.getFrame()
 	f.FIN = 1
-	switch data := b.(type) {
+	switch data := v.(type) {
 	case string:
 		f.Opcode = TextFrame
-		f.PayloadData = []byte(data)
+		f.PayloadData = str2bytes(data)
 		return c.writeFrame(f)
 	case *string:
 		f.Opcode = TextFrame
-		f.PayloadData = []byte(*data)
+		f.PayloadData = str2bytes(*data)
 		return c.writeFrame(f)
 	case []byte:
 		f.Opcode = BinaryFrame
@@ -104,7 +105,7 @@ func (c *Conn) ReadTextMessage() (p string, err error) {
 	if err != nil {
 		return "", err
 	}
-	p = string(f.PayloadData)
+	p = bytes2str(f.PayloadData)
 	c.putFrame(f)
 	return
 }
@@ -116,6 +117,16 @@ func (c *Conn) WriteTextMessage(b string) (err error) {
 	f := c.getFrame()
 	f.FIN = 1
 	f.Opcode = TextFrame
-	f.PayloadData = []byte(b)
+	f.PayloadData = str2bytes(b)
 	return c.writeFrame(f)
+}
+
+func str2bytes(s string) []byte {
+	x := (*[2]uintptr)(unsafe.Pointer(&s))
+	h := [3]uintptr{x[0], x[1], x[1]}
+	return *(*[]byte)(unsafe.Pointer(&h))
+}
+
+func bytes2str(b []byte) string {
+	return *(*string)(unsafe.Pointer(&b))
 }
