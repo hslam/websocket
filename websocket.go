@@ -15,7 +15,7 @@ import (
 	"time"
 )
 
-var pool = &sync.Pool{New: func() interface{} {
+var responsePool = &sync.Pool{New: func() interface{} {
 	return make([]byte, 1024)
 }}
 
@@ -76,7 +76,7 @@ func (w *response) Header() http.Header {
 }
 
 func (w *response) Write(data []byte) (n int, err error) {
-	h := pool.Get().([]byte)[:0]
+	h := responsePool.Get().([]byte)[:0]
 	h = append(h, fmt.Sprintf("HTTP/1.1 %03d %s\r\n", w.status, http.StatusText(w.status))...)
 	h = append(h, fmt.Sprintf("Date: %s\r\n", time.Now().UTC().Format(http.TimeFormat))...)
 	h = append(h, fmt.Sprintf("Content-Length: %d\r\n", len(data))...)
@@ -84,7 +84,7 @@ func (w *response) Write(data []byte) (n int, err error) {
 	h = append(h, "\r\n"...)
 	h = append(h, data...)
 	n, err = w.conn.Write(h)
-	pool.Put(h)
+	responsePool.Put(h)
 	return len(data), err
 }
 
