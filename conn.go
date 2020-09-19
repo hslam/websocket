@@ -32,6 +32,8 @@ type Conn struct {
 	writeBuffer     []byte
 	buffer          []byte
 	connBuffer      []byte
+	readPool        *sync.Pool
+	writePool       *sync.Pool
 	closed          int32
 }
 

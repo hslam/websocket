@@ -61,10 +61,6 @@ func (c *Conn) putFrame(f *frame) {
 }
 
 func (c *Conn) readFrame() (f *frame, err error) {
-	var pool *sync.Pool
-	if c.shared {
-		pool = assignPool(c.readBufferSize)
-	}
 	f = c.getFrame()
 	for {
 		length := uint64(len(c.buffer))
@@ -86,7 +82,7 @@ func (c *Conn) readFrame() (f *frame, err error) {
 		}
 		var readBuffer []byte
 		if c.shared {
-			readBuffer = pool.Get().([]byte)
+			readBuffer = c.readPool.Get().([]byte)
 			readBuffer = readBuffer[:cap(readBuffer)]
 		} else {
 			readBuffer = c.readBuffer
@@ -95,13 +91,13 @@ func (c *Conn) readFrame() (f *frame, err error) {
 		n, err = c.read(readBuffer)
 		if err != nil {
 			if c.shared {
-				pool.Put(readBuffer)
+				c.readPool.Put(readBuffer)
 			}
 			return nil, err
 		} else if n > 0 {
 			c.buffer = append(c.buffer, readBuffer[:n]...)
 			if c.shared {
-				pool.Put(readBuffer)
+				c.readPool.Put(readBuffer)
 			}
 		}
 	}
@@ -109,17 +105,13 @@ func (c *Conn) readFrame() (f *frame, err error) {
 }
 
 func (c *Conn) writeFrame(f *frame) error {
-	var pool *sync.Pool
-	if c.shared {
-		pool = assignPool(c.writeBufferSize)
-	}
 	if c.isClient {
 		f.Mask = 1
 		f.MaskingKey = maskingKey(c.random)
 	}
 	var writeBuffer []byte
 	if c.shared {
-		writeBuffer = pool.Get().([]byte)
+		writeBuffer = c.writePool.Get().([]byte)
 		writeBuffer = writeBuffer[:cap(writeBuffer)]
 	} else {
 		writeBuffer = c.writeBuffer
@@ -133,7 +125,7 @@ func (c *Conn) writeFrame(f *frame) error {
 	data, err := f.Marshal(writeBuffer)
 	if err != nil {
 		if c.shared {
-			pool.Put(writeBuffer)
+			c.writePool.Put(writeBuffer)
 		} else {
 			c.writeBuffer = writeBuffer
 		}
@@ -142,7 +134,7 @@ func (c *Conn) writeFrame(f *frame) error {
 	c.write(data)
 	c.putFrame(f)
 	if c.shared {
-		pool.Put(writeBuffer)
+		c.writePool.Put(writeBuffer)
 	} else {
 		c.writeBuffer = writeBuffer
 	}
