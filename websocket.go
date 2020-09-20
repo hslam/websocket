@@ -7,6 +7,7 @@ package websocket
 import (
 	"bufio"
 	"crypto/tls"
+	"errors"
 	"fmt"
 	"io"
 	"net"
@@ -20,42 +21,42 @@ var responsePool = &sync.Pool{New: func() interface{} {
 }}
 
 // UpgradeHTTP upgrades the HTTP server connection to the WebSocket protocol.
-func UpgradeHTTP(w http.ResponseWriter, r *http.Request) *Conn {
+func UpgradeHTTP(w http.ResponseWriter, r *http.Request) (*Conn, error) {
 	if r.Method != "GET" {
 		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		io.WriteString(w, "405 must GET\n")
-		return nil
+		return nil, errors.New("405 must GET")
 	}
 	if r.Header.Get("Upgrade") != "websocket" || r.Header.Get("Connection") != "Upgrade" {
 		w.WriteHeader(http.StatusBadRequest)
 		io.WriteString(w, "400 not websocket protocol\n")
-		return nil
+		return nil, errors.New("400 not websocket protocol")
 	}
 	key := r.Header.Get("Sec-WebSocket-Key")
 	if key == "" {
 		w.WriteHeader(http.StatusBadRequest)
 		io.WriteString(w, "400 bad Key\n")
-		return nil
+		return nil, errors.New("400 bad Key")
 	}
 	netConn, _, err := w.(http.Hijacker).Hijack()
 	if err != nil {
-		return nil
+		return nil, err
 	}
 	conn := server(netConn, false, key)
 	err = conn.handshake()
 	if err != nil {
-		return nil
+		return nil, err
 	}
-	return conn
+	return conn, nil
 }
 
 // Upgrade upgrades the net.Conn conn to the WebSocket protocol.
-func Upgrade(conn net.Conn) *Conn {
+func Upgrade(conn net.Conn) (*Conn, error) {
 	var b = bufio.NewReader(conn)
 	req, err := http.ReadRequest(b)
 	if err != nil {
-		return nil
+		return nil, err
 	}
 	res := &response{handlerHeader: req.Header, conn: conn}
 	return UpgradeHTTP(res, req)
@@ -127,6 +128,8 @@ type Handler func(*Conn)
 
 // ServeHTTP implements the http.Handler interface for a WebSocket
 func (handler Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	conn := UpgradeHTTP(w, r)
-	handler(conn)
+	conn, err := UpgradeHTTP(w, r)
+	if err == nil {
+		handler(conn)
+	}
 }

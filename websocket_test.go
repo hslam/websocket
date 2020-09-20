@@ -68,7 +68,11 @@ func TestUpgrade(t *testing.T) {
 			if err != nil {
 				break
 			}
-			ws := Upgrade(conn)
+			ws, err := Upgrade(conn)
+			if err != nil {
+				t.Error(err)
+				return
+			}
 			if ws != nil {
 				wg.Add(1)
 				go func() {
