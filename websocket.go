@@ -52,7 +52,15 @@ func UpgradeHTTP(w http.ResponseWriter, r *http.Request) (*Conn, error) {
 }
 
 // Upgrade upgrades the net.Conn conn to the WebSocket protocol.
-func Upgrade(conn net.Conn) (*Conn, error) {
+func Upgrade(conn net.Conn, config *tls.Config) (*Conn, error) {
+	if config != nil {
+		tlsConn := tls.Server(conn, config)
+		if err := tlsConn.Handshake(); err != nil {
+			conn.Close()
+			return nil, err
+		}
+		conn = tlsConn
+	}
 	var b = bufio.NewReader(conn)
 	req, err := http.ReadRequest(b)
 	if err != nil {
