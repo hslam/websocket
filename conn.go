@@ -39,6 +39,9 @@ type Conn struct {
 
 // Read implements the net.Conn Read method.
 func (c *Conn) Read(b []byte) (n int, err error) {
+	if len(b) == 0 {
+		return 0, nil
+	}
 	c.reading.Lock()
 	defer c.reading.Unlock()
 	if len(c.connBuffer) > 0 {
@@ -74,6 +77,9 @@ func (c *Conn) read(b []byte) (n int, err error) {
 
 // Write implements the net.Conn Write method.
 func (c *Conn) Write(b []byte) (n int, err error) {
+	if len(b) == 0 {
+		return 0, nil
+	}
 	c.writing.Lock()
 	defer c.writing.Unlock()
 	f := c.getFrame()

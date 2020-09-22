@@ -44,24 +44,48 @@ func (c *Conn) ReceiveMessage(v interface{}) (err error) {
 
 // SendMessage sends v marshaled as single frame to ws.
 func (c *Conn) SendMessage(v interface{}) (err error) {
-	c.writing.Lock()
-	defer c.writing.Unlock()
-	f := c.getFrame()
-	f.FIN = 1
 	switch data := v.(type) {
 	case string:
+		if len(data) == 0 {
+			return nil
+		}
+		c.writing.Lock()
+		defer c.writing.Unlock()
+		f := c.getFrame()
+		f.FIN = 1
 		f.Opcode = TextFrame
 		f.PayloadData = []byte(data)
 		return c.writeFrame(f)
 	case *string:
+		if len(*data) == 0 {
+			return nil
+		}
+		c.writing.Lock()
+		defer c.writing.Unlock()
+		f := c.getFrame()
+		f.FIN = 1
 		f.Opcode = TextFrame
 		f.PayloadData = []byte(*data)
 		return c.writeFrame(f)
 	case []byte:
+		if len(data) == 0 {
+			return nil
+		}
+		c.writing.Lock()
+		defer c.writing.Unlock()
+		f := c.getFrame()
+		f.FIN = 1
 		f.Opcode = BinaryFrame
 		f.PayloadData = data
 		return c.writeFrame(f)
 	case *[]byte:
+		if len(*data) == 0 {
+			return nil
+		}
+		c.writing.Lock()
+		defer c.writing.Unlock()
+		f := c.getFrame()
+		f.FIN = 1
 		f.Opcode = BinaryFrame
 		f.PayloadData = *data
 		return c.writeFrame(f)
@@ -86,6 +110,9 @@ func (c *Conn) ReadMessage() (p []byte, err error) {
 
 // WriteMessage writes single message to ws.
 func (c *Conn) WriteMessage(b []byte) (err error) {
+	if len(b) == 0 {
+		return nil
+	}
 	c.writing.Lock()
 	defer c.writing.Unlock()
 	f := c.getFrame()
@@ -112,6 +139,9 @@ func (c *Conn) ReadTextMessage() (p string, err error) {
 
 // WriteTextMessage writes single text message to ws.
 func (c *Conn) WriteTextMessage(b string) (err error) {
+	if len(b) == 0 {
+		return nil
+	}
 	c.writing.Lock()
 	defer c.writing.Unlock()
 	f := c.getFrame()
