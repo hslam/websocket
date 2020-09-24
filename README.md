@@ -37,7 +37,7 @@ import (
 
 func main() {
 	m := mux.New()
-	m.HandleFunc("/upper", func(w http.ResponseWriter, r *http.Request) {
+	m.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		conn, err := websocket.UpgradeHTTP(w, r)
 		if err != nil {
 			return
@@ -98,7 +98,7 @@ import (
 )
 
 func main() {
-	conn, err := websocket.Dial("tcp", "127.0.0.1:8080", "/upper", nil)
+	conn, err := websocket.Dial("tcp", "127.0.0.1:8080", "/", nil)
 	if err != nil {
 		panic(err)
 	}
@@ -136,7 +136,7 @@ HELLO WORLD
 <button onclick="send()">upper</button>
 <script type="text/javascript">
     var ws = null;
-    var wsuri = "ws://127.0.0.1:8080/upper";
+    var wsuri = "ws://127.0.0.1:8080/";
     ws = new WebSocket(wsuri);
     ws.onmessage = function(e) {
         var result = document.getElementById('result');
