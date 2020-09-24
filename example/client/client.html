@@ -11,7 +11,7 @@
 <button onclick="send()">upper</button>
 <script type="text/javascript">
     var ws = null;
-    var wsuri = "ws://127.0.0.1:8080/upper";
+    var wsuri = "ws://127.0.0.1:8080/";
     ws = new WebSocket(wsuri);
     ws.onmessage = function(e) {
         var result = document.getElementById('result');

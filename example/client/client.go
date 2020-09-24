@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	conn, err := websocket.Dial("tcp", "127.0.0.1:8080", "/upper", nil)
+	conn, err := websocket.Dial("tcp", "127.0.0.1:8080", "/", nil)
 	if err != nil {
 		panic(err)
 	}

@@ -10,7 +10,7 @@ import (
 
 func main() {
 	m := mux.New()
-	m.HandleFunc("/upper", func(w http.ResponseWriter, r *http.Request) {
+	m.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		conn, err := websocket.UpgradeHTTP(w, r)
 		if err != nil {
 			return

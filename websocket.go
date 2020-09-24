@@ -22,6 +22,10 @@ var responsePool = &sync.Pool{New: func() interface{} {
 
 // UpgradeHTTP upgrades the HTTP server connection to the WebSocket protocol.
 func UpgradeHTTP(w http.ResponseWriter, r *http.Request) (*Conn, error) {
+	return upgradeHTTP(w, r, false)
+}
+
+func upgradeHTTP(w http.ResponseWriter, r *http.Request, shared bool) (*Conn, error) {
 	if r.Method != "GET" {
 		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 		w.WriteHeader(http.StatusMethodNotAllowed)
@@ -43,7 +47,7 @@ func UpgradeHTTP(w http.ResponseWriter, r *http.Request) (*Conn, error) {
 	if err != nil {
 		return nil, err
 	}
-	conn := server(netConn, false, key)
+	conn := server(netConn, shared, key)
 	err = conn.handshake()
 	if err != nil {
 		return nil, err
@@ -67,7 +71,7 @@ func Upgrade(conn net.Conn, config *tls.Config) (*Conn, error) {
 		return nil, err
 	}
 	res := &response{handlerHeader: req.Header, conn: conn}
-	return UpgradeHTTP(res, req)
+	return upgradeHTTP(res, req, true)
 }
 
 type response struct {
