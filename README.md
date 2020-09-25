@@ -1,5 +1,5 @@
 # websocket
-[![GoDoc](https://godoc.org/github.com/hslam/websocket?status.svg)](https://godoc.org/github.com/hslam/websocket)
+[![PkgGoDev](https://pkg.go.dev/badge/github.com/hslam/websocket)](https://pkg.go.dev/github.com/hslam/websocket)
 [![Build Status](https://travis-ci.org/hslam/websocket.svg?branch=master)](https://travis-ci.org/hslam/websocket)
 [![Go Report Card](https://goreportcard.com/badge/github.com/hslam/websocket?v=7e100)](https://goreportcard.com/report/github.com/hslam/websocket)
 [![LICENSE](https://img.shields.io/github/license/hslam/websocket.svg?style=flat-square)](https://github.com/hslam/websocket/blob/master/LICENSE)
@@ -23,7 +23,7 @@ import "github.com/hslam/websocket"
 ### Usage
 #### Example
 
-**server.go**
+server.go
 ```go
 package main
 
@@ -56,7 +56,7 @@ func main() {
 }
 ```
 
-**server_poll.go**
+server_poll.go
 ```go
 package main
 
@@ -87,7 +87,7 @@ func main() {
 }
 ```
 
-**client.go**
+client.go
 ```go
 package main
 
