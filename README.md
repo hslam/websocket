@@ -10,6 +10,13 @@ Package websocket implements a client and server for the WebSocket protocol as s
 * Upgrade HTTP / Conn
 * TLS
 
+## [Benchmark](https://github.com/hslam/websocket-benchmark "websocket-benchmark")
+
+##### Websocket QPS
+
+<img src="https://raw.githubusercontent.com/hslam/websocket/master/websocket-qps.png"  alt="websocket" align=center>
+
+
 ## Get started
 
 ### Install
