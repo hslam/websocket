@@ -8,10 +8,23 @@ import (
 	"io"
 	"math/rand"
 	"net"
+	"runtime"
 	"sync"
 	"sync/atomic"
 	"time"
 )
+
+var gcing int32
+
+func gc() {
+	if atomic.CompareAndSwapInt32(&gcing, 0, 1) {
+		for i := 0; i < 24; i++ {
+			time.Sleep(time.Millisecond * 125)
+			runtime.GC()
+		}
+		atomic.StoreInt32(&gcing, 1)
+	}
+}
 
 // Conn represents a WebSocket connection.
 type Conn struct {
@@ -110,6 +123,7 @@ func (c *Conn) Close() error {
 	c.writeBuffer = nil
 	c.buffer = nil
 	c.connBuffer = nil
+	go gc()
 	return c.conn.Close()
 }
 

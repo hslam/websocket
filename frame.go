@@ -4,6 +4,7 @@
 package websocket
 
 import (
+	"io"
 	"math/rand"
 	"sync"
 	"sync/atomic"
@@ -92,6 +93,9 @@ func (c *Conn) readFrame() (f *frame, err error) {
 		if err != nil {
 			if c.shared {
 				c.readPool.Put(readBuffer)
+			}
+			if err == io.EOF {
+				c.Close()
 			}
 			return nil, err
 		} else if n > 0 {
