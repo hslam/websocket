@@ -142,9 +142,8 @@ HELLO WORLD
 <label id="result">result：</label><br><br>
 <button onclick="send()">upper</button>
 <script type="text/javascript">
-    var ws = null;
     var wsuri = "ws://127.0.0.1:8080/";
-    ws = new WebSocket(wsuri);
+    var ws = new WebSocket(wsuri);
     ws.onmessage = function(e) {
         var result = document.getElementById('result');
         result.innerHTML = "result：" + e.data;
@@ -162,7 +161,7 @@ HELLO WORLD
 This package is licensed under a MIT license (Copyright (c) 2020 Meng Huang)
 
 
-### Authors
+### Author
 websocket was written by Meng Huang.
 
 
