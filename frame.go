@@ -6,6 +6,7 @@ package websocket
 import (
 	"io"
 	"math/rand"
+	"strings"
 	"sync"
 	"sync/atomic"
 )
@@ -94,6 +95,10 @@ func (c *Conn) readFrame() (f *frame, err error) {
 			if c.shared {
 				c.readPool.Put(readBuffer)
 			}
+			errMsg := err.Error()
+			if strings.Contains(errMsg, "use of closed network connection") || strings.Contains(errMsg, "connection reset by peer") {
+				err = io.EOF
+			}
 			if err == io.EOF {
 				c.Close()
 			}
@@ -135,14 +140,20 @@ func (c *Conn) writeFrame(f *frame) error {
 		}
 		return err
 	}
-	c.write(data)
+	_, err = c.write(data)
+	if err != nil {
+		errMsg := err.Error()
+		if strings.Contains(errMsg, "use of closed network connection") || strings.Contains(errMsg, "connection reset by peer") {
+			err = io.EOF
+		}
+	}
 	c.putFrame(f)
 	if c.shared {
 		c.writePool.Put(writeBuffer)
 	} else {
 		c.writeBuffer = writeBuffer
 	}
-	return nil
+	return err
 }
 
 type frame struct {
