@@ -14,8 +14,7 @@ Package websocket implements a client and server for the WebSocket protocol as s
 
 ##### Websocket QPS
 
-<img src="https://raw.githubusercontent.com/hslam/websocket/master/websocket-qps.png" alt="websocket" align=center>
-
+<img src="https://raw.githubusercontent.com/hslam/websocket/master/websocket-qps.png" width = "480" height = "360" alt="websocket" align=center>
 
 ## Get started
 
