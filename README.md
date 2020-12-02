@@ -8,7 +8,7 @@ Package websocket implements a client and server for the WebSocket protocol as s
 
 ## Feature
 * Upgrade HTTP / Conn
-* Epoll / Kqueue ( [netpoll](https://github.com/hslam/netpoll "netpoll") )
+* [Epoll / Kqueue](https://github.com/hslam/netpoll "netpoll")
 * TLS
 
 ## [Benchmark](https://github.com/hslam/websocket-benchmark "websocket-benchmark")
