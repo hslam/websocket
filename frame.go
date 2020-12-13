@@ -67,21 +67,22 @@ func (c *Conn) readFrame() (f *frame, err error) {
 	for {
 		length := uint64(len(c.buffer))
 		var i uint64 = 0
-		for i < length {
+		if i < length {
 			if length < 3 {
-				break
+				goto read
 			}
 			var offset uint64
 			offset, err = f.Unmarshal(c.buffer)
 			if err != nil {
 				return nil, err
 			} else if offset == 0 {
-				break
+				goto read
 			} else {
 				c.buffer = c.buffer[offset:]
 				return
 			}
 		}
+	read:
 		var readBuffer []byte
 		if c.shared {
 			readBuffer = c.readPool.Get().([]byte)
