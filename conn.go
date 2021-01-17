@@ -68,7 +68,7 @@ func (c *Conn) Read(b []byte) (n int, err error) {
 		c.connBuffer = c.connBuffer[:num]
 		return len(b), nil
 	}
-	f, err := c.readFrame()
+	f, err := c.readFrame(nil)
 	if err != nil {
 		return 0, err
 	}

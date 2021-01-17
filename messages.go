@@ -25,7 +25,7 @@ func (c *Conn) ReceiveMessage(v interface{}) (err error) {
 	defer c.reading.Unlock()
 	c.buffer = c.buffer[:0]
 	c.connBuffer = c.connBuffer[:0]
-	f, err := c.readFrame()
+	f, err := c.readFrame(nil)
 	if err != nil {
 		return err
 	}
@@ -94,12 +94,12 @@ func (c *Conn) SendMessage(v interface{}) (err error) {
 }
 
 // ReadMessage reads single message from ws.
-func (c *Conn) ReadMessage() (p []byte, err error) {
+func (c *Conn) ReadMessage(buf []byte) (p []byte, err error) {
 	c.reading.Lock()
 	defer c.reading.Unlock()
 	c.buffer = c.buffer[:0]
 	c.connBuffer = c.connBuffer[:0]
-	f, err := c.readFrame()
+	f, err := c.readFrame(buf)
 	if err != nil {
 		return nil, err
 	}
@@ -128,7 +128,7 @@ func (c *Conn) ReadTextMessage() (p string, err error) {
 	defer c.reading.Unlock()
 	c.buffer = c.buffer[:0]
 	c.connBuffer = c.connBuffer[:0]
-	f, err := c.readFrame()
+	f, err := c.readFrame(nil)
 	if err != nil {
 		return "", err
 	}

@@ -12,7 +12,7 @@ func TestWebsocket(t *testing.T) {
 	addr := ":8080"
 	Serve := func(conn *Conn) {
 		for {
-			msg, err := conn.ReadMessage()
+			msg, err := conn.ReadMessage(nil)
 			if err != nil {
 				break
 			}
@@ -35,7 +35,7 @@ func TestWebsocket(t *testing.T) {
 	if err := conn.WriteMessage([]byte(msg)); err != nil {
 		t.Error(err)
 	}
-	data, err := conn.ReadMessage()
+	data, err := conn.ReadMessage(nil)
 	if err != nil {
 		t.Error(err)
 	} else if string(data) != msg {
@@ -50,7 +50,7 @@ func TestUpgrade(t *testing.T) {
 	addr := ":8080"
 	Serve := func(conn *Conn) {
 		for {
-			msg, err := conn.ReadMessage()
+			msg, err := conn.ReadMessage(nil)
 			if err != nil {
 				break
 			}
@@ -90,7 +90,7 @@ func TestUpgrade(t *testing.T) {
 	if err := conn.WriteMessage([]byte(msg)); err != nil {
 		t.Error(err)
 	}
-	data, err := conn.ReadMessage()
+	data, err := conn.ReadMessage(nil)
 	if err != nil {
 		t.Error(err)
 	} else if string(data) != msg {

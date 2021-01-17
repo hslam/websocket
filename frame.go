@@ -62,7 +62,7 @@ func (c *Conn) putFrame(f *frame) {
 	framePool.Put(f)
 }
 
-func (c *Conn) readFrame() (f *frame, err error) {
+func (c *Conn) readFrame(buf []byte) (f *frame, err error) {
 	f = c.getFrame()
 	for {
 		length := uint64(len(c.buffer))
@@ -78,7 +78,17 @@ func (c *Conn) readFrame() (f *frame, err error) {
 			} else if offset == 0 {
 				goto read
 			} else {
-				c.buffer = c.buffer[offset:]
+				msgLength := len(f.PayloadData)
+				var p []byte
+				if cap(buf) >= msgLength {
+					p = buf[:msgLength]
+				} else {
+					p = make([]byte, msgLength)
+				}
+				copy(p, f.PayloadData)
+				f.PayloadData = p
+				n := copy(c.buffer, c.buffer[offset:])
+				c.buffer = c.buffer[:n]
 				return
 			}
 		}
@@ -105,7 +115,14 @@ func (c *Conn) readFrame() (f *frame, err error) {
 			}
 			return nil, err
 		} else if n > 0 {
-			c.buffer = append(c.buffer, readBuffer[:n]...)
+			length := len(c.buffer)
+			size := length + n
+			if cap(c.buffer) >= size {
+				c.buffer = c.buffer[:size]
+				copy(c.buffer[length:], readBuffer[:n])
+			} else {
+				c.buffer = append(c.buffer, readBuffer[:n]...)
+			}
 			if c.shared {
 				c.readPool.Put(readBuffer)
 			}
