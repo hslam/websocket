@@ -26,7 +26,12 @@ func TestWebsocket(t *testing.T) {
 		Handler: Handler(Serve),
 	}
 	l, _ := net.Listen(network, addr)
-	go httpServer.Serve(l)
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		httpServer.Serve(l)
+	}()
 	conn, err := Dial(network, addr, "/", nil)
 	if err != nil {
 		t.Error(err)
@@ -43,6 +48,7 @@ func TestWebsocket(t *testing.T) {
 	}
 	conn.Close()
 	httpServer.Close()
+	wg.Wait()
 }
 
 func TestUpgrade(t *testing.T) {
