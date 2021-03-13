@@ -18,11 +18,11 @@ var gcing int32
 
 func gc() {
 	if atomic.CompareAndSwapInt32(&gcing, 0, 1) {
+		defer atomic.StoreInt32(&gcing, 1)
 		for i := 0; i < 24; i++ {
 			time.Sleep(time.Millisecond * 125)
 			runtime.GC()
 		}
-		atomic.StoreInt32(&gcing, 1)
 	}
 }
 
@@ -56,32 +56,34 @@ func (c *Conn) Read(b []byte) (n int, err error) {
 		return 0, nil
 	}
 	c.reading.Lock()
-	defer c.reading.Unlock()
 	if len(c.connBuffer) > 0 {
 		if len(b) >= len(c.connBuffer) {
-			copy(b, c.connBuffer)
+			n = copy(b, c.connBuffer)
 			c.connBuffer = c.connBuffer[:0]
-			return len(c.connBuffer), nil
+			c.reading.Unlock()
+			return
 		}
-		copy(b, c.connBuffer[:len(b)])
+		n = copy(b, c.connBuffer[:len(b)])
 		num := copy(c.connBuffer, c.connBuffer[len(b):])
 		c.connBuffer = c.connBuffer[:num]
-		return len(b), nil
+		c.reading.Unlock()
+		return
 	}
 	f, err := c.readFrame(nil)
-	if err != nil {
-		return 0, err
-	}
-	length := len(f.PayloadData)
-	if len(b) >= length {
-		copy(b, f.PayloadData)
+	if err == nil {
+		length := len(f.PayloadData)
+		if len(b) >= length {
+			copy(b, f.PayloadData)
+			c.putFrame(f)
+			c.reading.Unlock()
+			return length, nil
+		}
+		n = copy(b, f.PayloadData[:len(b)])
+		c.connBuffer = append(c.connBuffer, f.PayloadData[len(b):]...)
 		c.putFrame(f)
-		return length, nil
 	}
-	copy(b, f.PayloadData[:len(b)])
-	c.connBuffer = append(c.connBuffer, f.PayloadData[len(b):]...)
-	c.putFrame(f)
-	return len(b), nil
+	c.reading.Unlock()
+	return
 }
 
 func (c *Conn) read(b []byte) (n int, err error) {
@@ -94,16 +96,16 @@ func (c *Conn) Write(b []byte) (n int, err error) {
 		return 0, nil
 	}
 	c.writing.Lock()
-	defer c.writing.Unlock()
 	f := c.getFrame()
 	f.FIN = 1
 	f.Opcode = BinaryFrame
 	f.PayloadData = b
 	err = c.writeFrame(f)
-	if err != nil {
-		return 0, err
+	if err == nil {
+		n = len(b)
 	}
-	return len(b), nil
+	c.writing.Unlock()
+	return
 }
 
 func (c *Conn) write(b []byte) (n int, err error) {
