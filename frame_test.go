@@ -4,8 +4,82 @@
 package websocket
 
 import (
+	"reflect"
 	"testing"
 )
+
+func TestFrame(t *testing.T) {
+	{
+		f := frame{FIN: 1, Opcode: BinaryFrame, PayloadData: make([]byte, 64)}
+		data, _ := f.Marshal(nil)
+		var f2 = frame{}
+		f2.Unmarshal(data)
+		if f.FIN != f2.FIN {
+			t.Error()
+		}
+		if f.Opcode != f2.Opcode {
+			t.Error()
+		}
+		if !reflect.DeepEqual(f.PayloadData, f2.PayloadData) {
+			t.Error()
+		}
+	}
+	{
+		buf := make([]byte, 64*1024)
+		f := frame{FIN: 1, Opcode: BinaryFrame, PayloadData: make([]byte, 512)}
+		data, _ := f.Marshal(buf)
+		var f2 = frame{}
+		f2.Unmarshal(data)
+		if f.FIN != f2.FIN {
+			t.Error()
+		}
+		if f.Opcode != f2.Opcode {
+			t.Error()
+		}
+		if !reflect.DeepEqual(f.PayloadData, f2.PayloadData) {
+			t.Error()
+		}
+	}
+	{
+		buf := make([]byte, 128*1024)
+		f := frame{FIN: 1, Opcode: BinaryFrame, PayloadData: make([]byte, 64*1024)}
+		data, _ := f.Marshal(buf)
+		var f2 = frame{}
+		f2.Unmarshal(data)
+		if f.FIN != f2.FIN {
+			t.Error()
+		}
+		if f.Opcode != f2.Opcode {
+			t.Error()
+		}
+		if !reflect.DeepEqual(f.PayloadData, f2.PayloadData) {
+			t.Error()
+		}
+	}
+	{
+		buf := make([]byte, 128*1024)
+		f := frame{FIN: 1, Opcode: BinaryFrame, Mask: 1, MaskingKey: []byte{1, 2, 3, 4}, PayloadData: make([]byte, 64*1024)}
+		cp := frame{FIN: 1, Opcode: BinaryFrame, Mask: 1, MaskingKey: []byte{1, 2, 3, 4}, PayloadData: make([]byte, 64*1024)}
+		data, _ := cp.Marshal(buf)
+		var f2 = frame{}
+		f2.Unmarshal(data)
+		if f.FIN != f2.FIN {
+			t.Error()
+		}
+		if f.Opcode != f2.Opcode {
+			t.Error()
+		}
+		if f.Mask != f2.Mask {
+			t.Error()
+		}
+		if !reflect.DeepEqual(f.MaskingKey, f2.MaskingKey) {
+			t.Error()
+		}
+		if !reflect.DeepEqual(f.PayloadData, f2.PayloadData) {
+			t.Error()
+		}
+	}
+}
 
 func BenchmarkFrameMarshal(b *testing.B) {
 	buf := make([]byte, 64*1024)
