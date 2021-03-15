@@ -37,6 +37,9 @@ func TestConn(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
+	conn.SetConcurrency(func() int {
+		return 1
+	})
 	{
 		if err := conn.SetDeadline(time.Now().Add(time.Minute)); err != nil {
 			t.Error()
