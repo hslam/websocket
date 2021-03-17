@@ -37,6 +37,7 @@ func TestConn(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
+	conn.SetConcurrency(nil)
 	conn.SetConcurrency(func() int {
 		return 1
 	})
