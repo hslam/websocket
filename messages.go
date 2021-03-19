@@ -96,30 +96,30 @@ func (c *Conn) SendMessage(v interface{}) (err error) {
 // ReadMessage reads single message from ws.
 func (c *Conn) ReadMessage(buf []byte) (p []byte, err error) {
 	c.reading.Lock()
-	defer c.reading.Unlock()
 	c.buffer = c.buffer[:0]
 	c.connBuffer = c.connBuffer[:0]
-	f, err := c.readFrame(buf)
-	if err != nil {
-		return nil, err
+	var f *frame
+	f, err = c.readFrame(buf)
+	if err == nil {
+		p = f.PayloadData
+		c.putFrame(f)
 	}
-	p = f.PayloadData
-	c.putFrame(f)
+	c.reading.Unlock()
 	return
 }
 
 // WriteMessage writes single message to ws.
 func (c *Conn) WriteMessage(b []byte) (err error) {
-	if len(b) == 0 {
-		return nil
+	if len(b) > 0 {
+		c.writing.Lock()
+		f := c.getFrame()
+		f.FIN = 1
+		f.Opcode = BinaryFrame
+		f.PayloadData = b
+		err = c.writeFrame(f)
+		c.writing.Unlock()
 	}
-	c.writing.Lock()
-	defer c.writing.Unlock()
-	f := c.getFrame()
-	f.FIN = 1
-	f.Opcode = BinaryFrame
-	f.PayloadData = b
-	return c.writeFrame(f)
+	return
 }
 
 // ReadTextMessage reads single text message from ws.
