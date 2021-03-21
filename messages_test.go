@@ -68,6 +68,47 @@ func TestMessage(t *testing.T) {
 		if err := conn.SendMessage([]byte(msg)); err != nil {
 			t.Error(err)
 		}
+		var data []byte
+		err := conn.ReceiveMessage(&data)
+		if err != nil {
+			t.Error(err)
+		} else if string(data) != msg {
+			t.Error(string(data))
+		}
+	}
+	{
+		msg := "Hello World"
+		str := []byte(msg)
+		if err := conn.SendMessage(&str); err != nil {
+			t.Error(err)
+		}
+		var data []byte
+		err := conn.ReceiveMessage(&data)
+		if err != nil {
+			t.Error(err)
+		} else if string(data) != string(msg) {
+			println(string(data), string(msg))
+			t.Error(string(data))
+		}
+	}
+	{
+		msg := "Hello World"
+		if err := conn.SendMessage(msg); err != nil {
+			t.Error(err)
+		}
+		var v string
+		err := conn.ReceiveMessage(&v)
+		if err != nil {
+			t.Error(err)
+		} else if v != msg {
+			t.Error(v)
+		}
+	}
+	{
+		msg := "Hello World"
+		if err := conn.SendMessage(&msg); err != nil {
+			t.Error(err)
+		}
 		var v string
 		err := conn.ReceiveMessage(&v)
 		if err != nil {
