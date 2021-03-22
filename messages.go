@@ -125,28 +125,28 @@ func (c *Conn) WriteMessage(b []byte) (err error) {
 // ReadTextMessage reads single text message from ws.
 func (c *Conn) ReadTextMessage() (p string, err error) {
 	c.reading.Lock()
-	defer c.reading.Unlock()
 	c.buffer = c.buffer[:0]
 	c.connBuffer = c.connBuffer[:0]
-	f, err := c.readFrame(nil)
-	if err != nil {
-		return "", err
+	var f *frame
+	f, err = c.readFrame(nil)
+	if err == nil {
+		p = *(*string)(unsafe.Pointer(&f.PayloadData))
+		c.putFrame(f)
 	}
-	p = *(*string)(unsafe.Pointer(&f.PayloadData))
-	c.putFrame(f)
+	c.reading.Unlock()
 	return
 }
 
 // WriteTextMessage writes single text message to ws.
 func (c *Conn) WriteTextMessage(b string) (err error) {
-	if len(b) == 0 {
-		return nil
+	if len(b) > 0 {
+		c.writing.Lock()
+		f := c.getFrame()
+		f.FIN = 1
+		f.Opcode = TextFrame
+		f.PayloadData = []byte(b)
+		err = c.writeFrame(f)
+		c.writing.Unlock()
 	}
-	c.writing.Lock()
-	defer c.writing.Unlock()
-	f := c.getFrame()
-	f.FIN = 1
-	f.Opcode = TextFrame
-	f.PayloadData = []byte(b)
-	return c.writeFrame(f)
+	return
 }
