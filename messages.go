@@ -46,49 +46,49 @@ func (c *Conn) ReceiveMessage(v interface{}) (err error) {
 func (c *Conn) SendMessage(v interface{}) (err error) {
 	switch data := v.(type) {
 	case string:
-		if len(data) == 0 {
-			return nil
+		if len(data) > 0 {
+			c.writing.Lock()
+			f := c.getFrame()
+			f.FIN = 1
+			f.Opcode = TextFrame
+			f.PayloadData = []byte(data)
+			err = c.writeFrame(f)
+			c.writing.Unlock()
 		}
-		c.writing.Lock()
-		defer c.writing.Unlock()
-		f := c.getFrame()
-		f.FIN = 1
-		f.Opcode = TextFrame
-		f.PayloadData = []byte(data)
-		return c.writeFrame(f)
+		return
 	case *string:
-		if len(*data) == 0 {
-			return nil
+		if len(*data) > 0 {
+			c.writing.Lock()
+			f := c.getFrame()
+			f.FIN = 1
+			f.Opcode = TextFrame
+			f.PayloadData = []byte(*data)
+			err = c.writeFrame(f)
+			c.writing.Unlock()
 		}
-		c.writing.Lock()
-		defer c.writing.Unlock()
-		f := c.getFrame()
-		f.FIN = 1
-		f.Opcode = TextFrame
-		f.PayloadData = []byte(*data)
-		return c.writeFrame(f)
+		return
 	case []byte:
-		if len(data) == 0 {
-			return nil
+		if len(data) > 0 {
+			c.writing.Lock()
+			f := c.getFrame()
+			f.FIN = 1
+			f.Opcode = BinaryFrame
+			f.PayloadData = data
+			err = c.writeFrame(f)
+			c.writing.Unlock()
 		}
-		c.writing.Lock()
-		defer c.writing.Unlock()
-		f := c.getFrame()
-		f.FIN = 1
-		f.Opcode = BinaryFrame
-		f.PayloadData = data
-		return c.writeFrame(f)
+		return
 	case *[]byte:
-		if len(*data) == 0 {
-			return nil
+		if len(*data) > 0 {
+			c.writing.Lock()
+			f := c.getFrame()
+			f.FIN = 1
+			f.Opcode = BinaryFrame
+			f.PayloadData = *data
+			err = c.writeFrame(f)
+			c.writing.Unlock()
 		}
-		c.writing.Lock()
-		defer c.writing.Unlock()
-		f := c.getFrame()
-		f.FIN = 1
-		f.Opcode = BinaryFrame
-		f.PayloadData = *data
-		return c.writeFrame(f)
+		return
 	}
 	return errors.New("not supported")
 }
