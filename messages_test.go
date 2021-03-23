@@ -118,6 +118,27 @@ func TestMessage(t *testing.T) {
 		}
 	}
 	{
+		{
+			msg := "Hello World"
+			if err := conn.SendMessage(&msg); err != nil {
+				t.Error(err)
+			}
+		}
+		{
+			msg := int64(0)
+			if err := conn.SendMessage(&msg); err == nil {
+				t.Error()
+			}
+		}
+		{
+			var v uint64
+			err := conn.ReceiveMessage(&v)
+			if err == nil {
+				t.Error()
+			}
+		}
+	}
+	{
 		msg := "Hello World"
 		if err := conn.WriteTextMessage(msg); err != nil {
 			t.Error(err)

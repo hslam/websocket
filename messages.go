@@ -22,24 +22,24 @@ func (c *Conn) SetConcurrency(concurrency func() int) {
 // ReceiveMessage receives single frame from ws, unmarshaled and stores in v.
 func (c *Conn) ReceiveMessage(v interface{}) (err error) {
 	c.reading.Lock()
-	defer c.reading.Unlock()
 	c.buffer = c.buffer[:0]
 	c.connBuffer = c.connBuffer[:0]
-	f, err := c.readFrame(nil)
-	if err != nil {
-		return err
+	var f *frame
+	f, err = c.readFrame(nil)
+	if err == nil {
+		switch data := v.(type) {
+		case *string:
+			*data = *(*string)(unsafe.Pointer(&f.PayloadData))
+			c.putFrame(f)
+		case *[]byte:
+			*data = f.PayloadData
+			c.putFrame(f)
+		default:
+			err = errors.New("not supported")
+		}
 	}
-	switch data := v.(type) {
-	case *string:
-		*data = *(*string)(unsafe.Pointer(&f.PayloadData))
-		c.putFrame(f)
-		return nil
-	case *[]byte:
-		*data = f.PayloadData
-		c.putFrame(f)
-		return nil
-	}
-	return errors.New("not supported")
+	c.reading.Unlock()
+	return
 }
 
 // SendMessage sends v marshaled as single frame to ws.
