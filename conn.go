@@ -120,7 +120,6 @@ func (c *Conn) Close() error {
 	if w, ok := c.writer.(*writer.Writer); ok {
 		w.Close()
 	}
-	c.writer = nil
 	c.readBuffer = nil
 	c.writeBuffer = nil
 	c.buffer = nil
