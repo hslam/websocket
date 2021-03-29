@@ -150,19 +150,13 @@ func (c *Conn) writeFrame(f *frame) error {
 		writeBuffer = make([]byte, maxBytes)
 	}
 	data, err := f.Marshal(writeBuffer)
-	if err != nil {
-		if c.shared {
-			c.writePool.Put(writeBuffer)
-		} else {
-			c.writeBuffer = writeBuffer
-		}
-		return err
-	}
-	_, err = c.write(data)
-	if err != nil {
-		errMsg := err.Error()
-		if strings.Contains(errMsg, "use of closed network connection") || strings.Contains(errMsg, "connection reset by peer") {
-			err = io.EOF
+	if err == nil {
+		_, err = c.write(data)
+		if err != nil {
+			errMsg := err.Error()
+			if strings.Contains(errMsg, "use of closed network connection") || strings.Contains(errMsg, "connection reset by peer") {
+				err = io.EOF
+			}
 		}
 	}
 	c.putFrame(f)
