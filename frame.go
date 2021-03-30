@@ -67,17 +67,12 @@ func (c *Conn) readFrame(buf []byte) (f *frame, err error) {
 	for {
 		length := uint64(len(c.buffer))
 		var i uint64 = 0
-		if i < length {
-			if length < 3 {
-				goto read
-			}
+		if i < length && length > 2 {
 			var offset uint64
 			offset, err = f.Unmarshal(c.buffer)
 			if err != nil {
 				return nil, err
-			} else if offset == 0 {
-				goto read
-			} else {
+			} else if offset > 0 {
 				msgLength := len(f.PayloadData)
 				var p []byte
 				if cap(buf) >= msgLength {
@@ -92,7 +87,6 @@ func (c *Conn) readFrame(buf []byte) (f *frame, err error) {
 				return
 			}
 		}
-	read:
 		var readBuffer []byte
 		if c.shared {
 			readBuffer = c.readPool.Get().([]byte)
@@ -128,7 +122,6 @@ func (c *Conn) readFrame(buf []byte) (f *frame, err error) {
 			}
 		}
 	}
-	return
 }
 
 func (c *Conn) writeFrame(f *frame) error {
