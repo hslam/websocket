@@ -4,7 +4,10 @@
 package websocket
 
 import (
+	"net"
+	"net/http"
 	"reflect"
+	"sync"
 	"testing"
 )
 
@@ -137,6 +140,81 @@ func TestFrame(t *testing.T) {
 			}
 		}
 	}
+}
+
+func TestConnFrame(t *testing.T) {
+	network := "tcp"
+	addr := ":8080"
+	Serve := func(conn *Conn) {
+		for {
+			msg, err := conn.ReadMessage(nil)
+			if err != nil {
+				break
+			}
+			conn.WriteMessage(msg)
+		}
+		conn.Close()
+	}
+
+	httpServer := &http.Server{
+		Addr:    addr,
+		Handler: Handler(Serve),
+	}
+	l, _ := net.Listen(network, addr)
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		httpServer.Serve(l)
+	}()
+	{
+		conn, err := Dial(network, addr, "/", nil)
+		if err != nil {
+			t.Error(err)
+		}
+		sizes := []int{64, 512, 64 * 1024}
+		for i := 0; i < len(sizes); i++ {
+			msg := string(make([]byte, sizes[i]))
+			if err := conn.WriteMessage([]byte(msg)); err != nil {
+				t.Error(err)
+			}
+			data, err := conn.ReadMessage(nil)
+			if err != nil {
+				t.Error(err)
+			} else if string(data) != msg {
+				t.Error(string(data))
+			}
+		}
+		conn.Close()
+	}
+	{
+		conn, err := Dial(network, addr, "/", nil)
+		if err != nil {
+			t.Error(err)
+		}
+		conn.Close()
+		msg := "Hello World"
+		if err := conn.WriteMessage([]byte(msg)); err == nil {
+			t.Error()
+		}
+	}
+	{
+		conn, err := Dial(network, addr, "/", nil)
+		if err != nil {
+			t.Error(err)
+		}
+		msg := "Hello World"
+		if err := conn.WriteMessage([]byte(msg)); err != nil {
+			t.Error(err)
+		}
+		conn.Close()
+		_, err = conn.ReadMessage(nil)
+		if err == nil {
+			t.Error(err)
+		}
+	}
+	httpServer.Close()
+	wg.Wait()
 }
 
 func BenchmarkFrameMarshal(b *testing.B) {
