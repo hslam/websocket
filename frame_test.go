@@ -178,7 +178,8 @@ func TestConnFrame(t *testing.T) {
 			if err := conn.WriteMessage([]byte(msg)); err != nil {
 				t.Error(err)
 			}
-			data, err := conn.ReadMessage(nil)
+			buf := make([]byte, 512)
+			data, err := conn.ReadMessage(buf)
 			if err != nil {
 				t.Error(err)
 			} else if string(data) != msg {
