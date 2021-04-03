@@ -35,21 +35,29 @@ func TestWebsocket(t *testing.T) {
 		defer wg.Done()
 		httpServer.Serve(l)
 	}()
-	conn, err := Dial(network, addr, "/", nil)
-	if err != nil {
-		t.Error(err)
+	{
+		conn, err := Dial(network, addr, "/", nil)
+		if err != nil {
+			t.Error(err)
+		}
+		msg := "Hello World"
+		if err := conn.WriteMessage([]byte(msg)); err != nil {
+			t.Error(err)
+		}
+		data, err := conn.ReadMessage(nil)
+		if err != nil {
+			t.Error(err)
+		} else if string(data) != msg {
+			t.Error(string(data))
+		}
+		conn.Close()
 	}
-	msg := "Hello World"
-	if err := conn.WriteMessage([]byte(msg)); err != nil {
-		t.Error(err)
+	{
+		_, err := Dial(network, addr, "/", testSkipVerifyTLSConfig())
+		if err == nil {
+			t.Error()
+		}
 	}
-	data, err := conn.ReadMessage(nil)
-	if err != nil {
-		t.Error(err)
-	} else if string(data) != msg {
-		t.Error(string(data))
-	}
-	conn.Close()
 	httpServer.Close()
 	wg.Wait()
 }
