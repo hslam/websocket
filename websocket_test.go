@@ -59,6 +59,12 @@ func TestWebsocket(t *testing.T) {
 		}
 	}
 	httpServer.Close()
+	{
+		_, err := Dial(network, addr, "/", nil)
+		if err == nil {
+			t.Error()
+		}
+	}
 	wg.Wait()
 }
 
