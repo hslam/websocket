@@ -110,11 +110,14 @@ func (c *Conn) clientHandshake() error {
 	// Require successful HTTP response
 	// before switching to websocket protocol.
 	resp, err := http.ReadResponse(bufio.NewReader(c.conn), &http.Request{Method: "GET"})
-	accept := resp.Header.Get("Sec-WebSocket-Accept")
-	if err == nil && resp.Status == status && accept == c.accept {
-		return nil
+	if err == nil {
+		accept := resp.Header.Get("Sec-WebSocket-Accept")
+		if resp.Status == status && accept == c.accept {
+			return nil
+		}
+		err = errors.New("unexpected HTTP response: " + resp.Status)
 	}
-	return errors.New("unexpected HTTP response: " + resp.Status)
+	return err
 }
 
 func (c *Conn) serverHandshake() error {
