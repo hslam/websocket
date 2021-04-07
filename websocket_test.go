@@ -128,12 +128,14 @@ func TestUpgradeTLS(t *testing.T) {
 	network := "tcp"
 	addr := ":8080"
 	Serve := func(conn *Conn) {
-		for {
-			msg, err := conn.ReadMessage(nil)
+		var msg []byte
+		var err error
+		for err == nil {
+			msg, err = conn.ReadMessage(nil)
 			if err != nil {
 				break
 			}
-			conn.WriteMessage(msg)
+			err = conn.WriteMessage(msg)
 		}
 		conn.Close()
 	}
@@ -147,34 +149,39 @@ func TestUpgradeTLS(t *testing.T) {
 			if err != nil {
 				break
 			}
-			ws, err := Upgrade(conn, testTLSConfig())
-			if err != nil {
-				break
-			}
-			if ws != nil {
-				wg.Add(1)
-				go func() {
-					defer wg.Done()
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
+				ws, err := Upgrade(conn, testTLSConfig())
+				if ws != nil && err == nil {
 					Serve(ws)
-				}()
-			}
+				}
+			}()
 		}
 	}()
-	conn, err := Dial(network, addr, "/", testSkipVerifyTLSConfig())
-	if err != nil {
-		t.Error(err)
+	{
+		_, err := Dial(network, addr, "/", nil)
+		if err == nil {
+			t.Error(err)
+		}
 	}
-	msg := "Hello World"
-	if err := conn.WriteMessage([]byte(msg)); err != nil {
-		t.Error(err)
+	{
+		conn, err := Dial(network, addr, "/", testSkipVerifyTLSConfig())
+		if err != nil {
+			t.Error(err)
+		}
+		msg := "Hello World"
+		if err := conn.WriteMessage([]byte(msg)); err != nil {
+			t.Error(err)
+		}
+		data, err := conn.ReadMessage(nil)
+		if err != nil {
+			t.Error(err)
+		} else if string(data) != msg {
+			t.Error(string(data))
+		}
+		conn.Close()
 	}
-	data, err := conn.ReadMessage(nil)
-	if err != nil {
-		t.Error(err)
-	} else if string(data) != msg {
-		t.Error(string(data))
-	}
-	conn.Close()
 	l.Close()
 	wg.Wait()
 }
