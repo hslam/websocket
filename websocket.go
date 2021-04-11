@@ -44,15 +44,15 @@ func upgradeHTTP(w http.ResponseWriter, r *http.Request, shared bool) (*Conn, er
 		return nil, errors.New("400 bad Key")
 	}
 	netConn, _, err := w.(http.Hijacker).Hijack()
-	if err != nil {
-		return nil, err
+	if err == nil {
+		conn := server(netConn, shared, key)
+		err = conn.handshake()
+		if err == nil {
+			return conn, nil
+		}
 	}
-	conn := server(netConn, shared, key)
-	err = conn.handshake()
-	if err != nil {
-		return nil, err
-	}
-	return conn, nil
+	return nil, err
+
 }
 
 // Upgrade upgrades the net.Conn conn to the WebSocket protocol.
