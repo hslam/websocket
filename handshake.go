@@ -94,7 +94,7 @@ func (c *Conn) handshake() error {
 	return c.serverHandshake()
 }
 
-func (c *Conn) clientHandshake() error {
+func (c *Conn) clientHandshake() (err error) {
 	c.accept = accept(c.key)
 	reqHeader := "GET " + c.path + " HTTP/1.1\r\n"
 	reqHeader += "Host: " + c.address + "\r\n"
@@ -103,19 +103,19 @@ func (c *Conn) clientHandshake() error {
 	reqHeader += "Upgrade: websocket\r\n"
 	reqHeader += "Sec-WebSocket-Version: 13\r\n"
 	reqHeader += "Sec-WebSocket-Key: " + c.key + "\r\n\r\n"
-	_, err := c.conn.Write([]byte(reqHeader))
-	if err != nil {
-		return err
-	}
-	// Require successful HTTP response
-	// before switching to websocket protocol.
-	resp, err := http.ReadResponse(bufio.NewReader(c.conn), &http.Request{Method: "GET"})
+	_, err = c.conn.Write([]byte(reqHeader))
 	if err == nil {
-		accept := resp.Header.Get("Sec-WebSocket-Accept")
-		if resp.Status == status && accept == c.accept {
-			return nil
+		// Require successful HTTP response
+		// before switching to websocket protocol.
+		var resp *http.Response
+		resp, err = http.ReadResponse(bufio.NewReader(c.conn), &http.Request{Method: "GET"})
+		if err == nil {
+			accept := resp.Header.Get("Sec-WebSocket-Accept")
+			if resp.Status == status && accept == c.accept {
+				return nil
+			}
+			err = errors.New("unexpected HTTP response: " + resp.Status)
 		}
-		err = errors.New("unexpected HTTP response: " + resp.Status)
 	}
 	return err
 }
