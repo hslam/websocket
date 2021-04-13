@@ -1,6 +1,7 @@
 # websocket
 [![PkgGoDev](https://pkg.go.dev/badge/github.com/hslam/websocket)](https://pkg.go.dev/github.com/hslam/websocket)
 [![Build Status](https://github.com/hslam/websocket/workflows/build/badge.svg)](https://github.com/hslam/websocket/actions)
+[![codecov](https://codecov.io/gh/hslam/websocket/branch/master/graph/badge.svg)](https://codecov.io/gh/hslam/websocket)
 [![Go Report Card](https://goreportcard.com/badge/github.com/hslam/websocket)](https://goreportcard.com/report/github.com/hslam/websocket)
 [![LICENSE](https://img.shields.io/github/license/hslam/websocket.svg?style=flat-square)](https://github.com/hslam/websocket/blob/master/LICENSE)
 
