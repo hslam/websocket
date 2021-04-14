@@ -228,6 +228,77 @@ func TestUpgradeHTTP(t *testing.T) {
 	{
 		clientHandshake := func(c *Conn) error {
 			c.accept = accept(c.key)
+			reqHeader := "GET " + c.path + " HTTP/1.1\r\n"
+			reqHeader += "Host: " + c.address + "\r\n"
+			reqHeader += "Origin: *\r\n"
+			reqHeader += "Connection: Upgrade\r\n"
+			reqHeader += "Upgrade: websocket\r\n"
+			reqHeader += "Sec-WebSocket-Version: 13\r\n"
+			reqHeader += "Sec-WebSocket-Key: " + c.key + "\r\n\r\n"
+			_, err := c.conn.Write([]byte(reqHeader))
+			if err != nil {
+				return err
+			}
+			// Require successful HTTP response
+			// before switching to websocket protocol.
+			resp, err := http.ReadResponse(bufio.NewReader(c.conn), &http.Request{Method: "GET"})
+			if err == nil {
+				accept := resp.Header.Get("Sec-WebSocket-Accept")
+				if resp.Status == status && accept == c.accept {
+					return nil
+				}
+				err = errors.New("unexpected HTTP response: " + resp.Status)
+			}
+			return err
+		}
+		fakeDial := func(network, address, path string, config *tls.Config) (*Conn, error) {
+			var err error
+			netConn, err := net.Dial(network, address)
+			if err != nil {
+				return nil, err
+			}
+			if config != nil {
+				config.ServerName = address
+				tlsConn := tls.Client(netConn, config)
+				if err = tlsConn.Handshake(); err != nil {
+					tlsConn.Close()
+					return nil, err
+				}
+				netConn = tlsConn
+			}
+			conn := client(netConn, true, address, path)
+			err = clientHandshake(conn)
+			if err != nil {
+				conn.Close()
+				return nil, &net.OpError{
+					Op:   "dial-http",
+					Net:  network + " " + address,
+					Addr: nil,
+					Err:  err,
+				}
+			}
+			return conn, nil
+		}
+
+		conn, err := fakeDial(network, addr, "/", nil)
+		if err != nil {
+			t.Error(err)
+		}
+		msg := "Hello World"
+		if err := conn.WriteMessage([]byte(msg)); err != nil {
+			t.Error(err)
+		}
+		data, err := conn.ReadMessage(nil)
+		if err != nil {
+			t.Error(err)
+		} else if string(data) != msg {
+			t.Error(string(data))
+		}
+		conn.Close()
+	}
+	{
+		clientHandshake := func(c *Conn) error {
+			c.accept = accept(c.key)
 			reqHeader := "POST " + c.path + " HTTP/1.1\r\n"
 			reqHeader += "Host: " + c.address + "\r\n"
 			reqHeader += "Origin: *\r\n"
