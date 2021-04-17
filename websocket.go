@@ -50,6 +50,8 @@ func upgradeHTTP(w http.ResponseWriter, r *http.Request, shared bool) (*Conn, er
 		if err == nil {
 			return conn, nil
 		}
+	} else if netConn != nil {
+		netConn.Close()
 	}
 	return nil, err
 
