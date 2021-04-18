@@ -7,10 +7,12 @@ import (
 	"bufio"
 	"crypto/tls"
 	"errors"
+	"fmt"
 	"net"
 	"net/http"
 	"sync"
 	"testing"
+	"time"
 )
 
 func TestWebsocket(t *testing.T) {
@@ -531,6 +533,101 @@ func TestUpgradeHTTP(t *testing.T) {
 		_, err := fakeDial(network, addr, "/", nil)
 		if err == nil {
 			t.Error()
+		}
+	}
+	l.Close()
+	wg.Wait()
+}
+
+type testResponse struct {
+	handlerHeader http.Header
+	status        int
+	conn          net.Conn
+}
+
+func (w *testResponse) Hijack() (net.Conn, *bufio.ReadWriter, error) {
+	return w.conn, nil, errors.New("not support")
+}
+
+func (w *testResponse) Header() http.Header {
+	return w.handlerHeader
+}
+
+func (w *testResponse) Write(data []byte) (n int, err error) {
+	h := responsePool.Get().([]byte)[:0]
+	h = append(h, fmt.Sprintf("HTTP/1.1 %03d %s\r\n", w.status, http.StatusText(w.status))...)
+	h = append(h, fmt.Sprintf("Date: %s\r\n", time.Now().UTC().Format(http.TimeFormat))...)
+	h = append(h, fmt.Sprintf("Content-Length: %d\r\n", len(data))...)
+	h = append(h, "Content-Type: text/plain; charset=utf-8\r\n"...)
+	h = append(h, "\r\n"...)
+	h = append(h, data...)
+	n, err = w.conn.Write(h)
+	responsePool.Put(h)
+	return len(data), err
+}
+
+func (w *testResponse) WriteHeader(code int) {
+	w.status = code
+}
+
+func TestResponseWriter(t *testing.T) {
+	network := "tcp"
+	addr := ":8080"
+	Serve := func(conn *Conn) {
+		for {
+			msg, err := conn.ReadMessage(nil)
+			if err != nil {
+				break
+			}
+			conn.WriteMessage(msg)
+		}
+		conn.Close()
+	}
+	Upgrade := func(conn net.Conn, config *tls.Config) (*Conn, error) {
+		if config != nil {
+			tlsConn := tls.Server(conn, config)
+			if err := tlsConn.Handshake(); err != nil {
+				conn.Close()
+				return nil, err
+			}
+			conn = tlsConn
+		}
+		var b = bufio.NewReader(conn)
+		req, err := http.ReadRequest(b)
+		if err != nil {
+			return nil, err
+		}
+		res := &testResponse{handlerHeader: req.Header, conn: conn}
+		return upgradeHTTP(res, req, true)
+	}
+
+	l, _ := net.Listen(network, addr)
+	wg := sync.WaitGroup{}
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for {
+			conn, err := l.Accept()
+			if err != nil {
+				break
+			}
+			ws, err := Upgrade(conn, nil)
+			if err != nil {
+				continue
+			}
+			if ws != nil {
+				wg.Add(1)
+				go func() {
+					defer wg.Done()
+					Serve(ws)
+				}()
+			}
+		}
+	}()
+	{
+		_, err := Dial(network, addr, "/", nil)
+		if err == nil {
+			t.Error(err)
 		}
 	}
 	l.Close()
