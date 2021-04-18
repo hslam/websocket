@@ -69,10 +69,8 @@ func (c *Conn) readFrame(buf []byte) (f *frame, err error) {
 		var i uint64 = 0
 		if i < length && length > 2 {
 			var offset uint64
-			offset, err = f.Unmarshal(c.buffer)
-			if err != nil {
-				return nil, err
-			} else if offset > 0 {
+			offset, _ = f.Unmarshal(c.buffer)
+			if offset > 0 {
 				msgLength := len(f.PayloadData)
 				var p []byte
 				if cap(buf) >= msgLength {
