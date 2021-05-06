@@ -8,8 +8,8 @@
 Package websocket implements a client and server for the WebSocket protocol as specified in [RFC 6455](https://tools.ietf.org/html/rfc6455 "RFC 6455").
 
 ## Feature
-* Upgrade HTTP / Conn
-* [Epoll / Kqueue](https://github.com/hslam/netpoll "netpoll")
+* Upgrade HTTP/Conn
+* [Epoll/Kqueue](https://github.com/hslam/netpoll "netpoll")
 * TLS
 
 ## [Benchmark](https://github.com/hslam/websocket-benchmark "websocket-benchmark")
