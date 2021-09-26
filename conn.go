@@ -4,6 +4,7 @@
 package websocket
 
 import (
+	"github.com/hslam/buffer"
 	"github.com/hslam/writer"
 	"io"
 	"math/rand"
@@ -45,8 +46,8 @@ type Conn struct {
 	writeBuffer     []byte
 	buffer          []byte
 	connBuffer      []byte
-	readPool        *sync.Pool
-	writePool       *sync.Pool
+	readPool        *buffer.Pool
+	writePool       *buffer.Pool
 	closed          int32
 }
 

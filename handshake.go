@@ -8,10 +8,10 @@ import (
 	"crypto/sha1"
 	"encoding/base64"
 	"errors"
+	"github.com/hslam/buffer"
 	"math/rand"
 	"net"
 	"net/http"
-	"sync"
 	"time"
 )
 
@@ -28,11 +28,11 @@ func server(conn net.Conn, shared bool, key string) *Conn {
 	writeBufferSize += 14
 	var readBuffer []byte
 	var writeBuffer []byte
-	var readPool *sync.Pool
-	var writePool *sync.Pool
+	var readPool *buffer.Pool
+	var writePool *buffer.Pool
 	if shared {
-		readPool = assignPool(readBufferSize)
-		writePool = assignPool(writeBufferSize)
+		readPool = buffers.AssignPool(readBufferSize)
+		writePool = buffers.AssignPool(writeBufferSize)
 	} else {
 		readBuffer = make([]byte, readBufferSize)
 		writeBuffer = make([]byte, writeBufferSize)
@@ -60,11 +60,11 @@ func client(conn net.Conn, shared bool, address, path string) *Conn {
 	writeBufferSize += 14
 	var readBuffer []byte
 	var writeBuffer []byte
-	var readPool *sync.Pool
-	var writePool *sync.Pool
+	var readPool *buffer.Pool
+	var writePool *buffer.Pool
 	if shared {
-		readPool = assignPool(readBufferSize)
-		writePool = assignPool(writeBufferSize)
+		readPool = buffers.AssignPool(readBufferSize)
+		writePool = buffers.AssignPool(writeBufferSize)
 	} else {
 		readBuffer = make([]byte, readBufferSize)
 		writeBuffer = make([]byte, writeBufferSize)

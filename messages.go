@@ -11,12 +11,9 @@ import (
 
 // SetConcurrency sets a callback func concurrency for writer.
 func (c *Conn) SetConcurrency(concurrency func() int) {
-	if concurrency == nil {
-		return
-	}
 	c.writing.Lock()
-	defer c.writing.Unlock()
 	c.writer = writer.NewWriter(c.writer, concurrency, 65536, false)
+	c.writing.Unlock()
 }
 
 // ReceiveMessage receives single frame from ws, unmarshaled and stores in v.

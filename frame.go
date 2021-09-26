@@ -4,11 +4,11 @@
 package websocket
 
 import (
+	"github.com/hslam/buffer"
 	"io"
 	"math/rand"
 	"strings"
 	"sync"
-	"sync/atomic"
 )
 
 const (
@@ -32,26 +32,9 @@ const (
 )
 
 var (
-	buffers   = sync.Map{}
-	assign    int32
+	buffers   = buffer.NewBuffers(1024)
 	framePool = &sync.Pool{New: func() interface{} { return &frame{} }}
 )
-
-func assignPool(size int) *sync.Pool {
-	for {
-		if p, ok := buffers.Load(size); ok {
-			return p.(*sync.Pool)
-		}
-		if atomic.CompareAndSwapInt32(&assign, 0, 1) {
-			var pool = &sync.Pool{New: func() interface{} {
-				return make([]byte, size)
-			}}
-			buffers.Store(size, pool)
-			atomic.StoreInt32(&assign, 0)
-			return pool
-		}
-	}
-}
 
 func (c *Conn) getFrame() *frame {
 	return framePool.Get().(*frame)
@@ -87,7 +70,7 @@ func (c *Conn) readFrame(buf []byte) (f *frame, err error) {
 		}
 		var readBuffer []byte
 		if c.shared {
-			readBuffer = c.readPool.Get().([]byte)
+			readBuffer = c.readPool.GetBuffer(c.readBufferSize)
 			readBuffer = readBuffer[:cap(readBuffer)]
 		} else {
 			readBuffer = c.readBuffer
@@ -96,7 +79,7 @@ func (c *Conn) readFrame(buf []byte) (f *frame, err error) {
 		n, err = c.read(readBuffer)
 		if err != nil {
 			if c.shared {
-				c.readPool.Put(readBuffer)
+				c.readPool.PutBuffer(readBuffer)
 			}
 			errMsg := err.Error()
 			if strings.Contains(errMsg, "use of closed network connection") || strings.Contains(errMsg, "connection reset by peer") {
@@ -116,7 +99,7 @@ func (c *Conn) readFrame(buf []byte) (f *frame, err error) {
 				c.buffer = append(c.buffer, readBuffer[:n]...)
 			}
 			if c.shared {
-				c.readPool.Put(readBuffer)
+				c.readPool.PutBuffer(readBuffer)
 			}
 		}
 	}
@@ -129,7 +112,7 @@ func (c *Conn) writeFrame(f *frame) error {
 	}
 	var writeBuffer []byte
 	if c.shared {
-		writeBuffer = c.writePool.Get().([]byte)
+		writeBuffer = c.writePool.GetBuffer(c.writeBufferSize)
 		writeBuffer = writeBuffer[:cap(writeBuffer)]
 	} else {
 		writeBuffer = c.writeBuffer
@@ -152,7 +135,7 @@ func (c *Conn) writeFrame(f *frame) error {
 	}
 	c.putFrame(f)
 	if c.shared {
-		c.writePool.Put(writeBuffer)
+		c.writePool.PutBuffer(writeBuffer)
 	} else {
 		c.writeBuffer = writeBuffer
 	}

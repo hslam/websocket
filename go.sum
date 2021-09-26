@@ -1,2 +1,4 @@
-github.com/hslam/writer v1.0.1-0.20210613145035-7fe9abcc6a5c h1:hJXEO+/q53/fP3oO9ETbQBOkyCRPCNlvngYdKDxs9HA=
-github.com/hslam/writer v1.0.1-0.20210613145035-7fe9abcc6a5c/go.mod h1:DJTidm2vEiuE6ZOOpqc/PnW6C9XipodkRPE/b2hxXA0=
+github.com/hslam/buffer v0.0.0-20210926124055-86667d87033c h1:wxwQJEvKW1MuUxTtoxsZsDHxS9CObyx4Z0TjfTgLbrU=
+github.com/hslam/buffer v0.0.0-20210926124055-86667d87033c/go.mod h1:Gvbj40hnzR54zoUOuDZqDi7aziar8UlkHXk6NVYLg2U=
+github.com/hslam/writer v1.0.1-0.20210926213639-2676a03cb4b8 h1:qus7VOaTXD2WSuqL8xoVTXhsnPp39TjF2IRMFfGxKT8=
+github.com/hslam/writer v1.0.1-0.20210926213639-2676a03cb4b8/go.mod h1:s4A43dNjDZfFoRKu7nk46S4j4eXOOQOqjwHRy0aRsdc=
