@@ -31,8 +31,8 @@ func server(conn net.Conn, shared bool, key string) *Conn {
 	var readPool *buffer.Pool
 	var writePool *buffer.Pool
 	if shared {
-		readPool = buffers.AssignPool(readBufferSize)
-		writePool = buffers.AssignPool(writeBufferSize)
+		readPool = buffer.AssignPool(readBufferSize)
+		writePool = buffer.AssignPool(writeBufferSize)
 	} else {
 		readBuffer = make([]byte, readBufferSize)
 		writeBuffer = make([]byte, writeBufferSize)
@@ -63,8 +63,8 @@ func client(conn net.Conn, shared bool, address, path string) *Conn {
 	var readPool *buffer.Pool
 	var writePool *buffer.Pool
 	if shared {
-		readPool = buffers.AssignPool(readBufferSize)
-		writePool = buffers.AssignPool(writeBufferSize)
+		readPool = buffer.AssignPool(readBufferSize)
+		writePool = buffer.AssignPool(writeBufferSize)
 	} else {
 		readBuffer = make([]byte, readBufferSize)
 		writeBuffer = make([]byte, writeBufferSize)

@@ -9,10 +9,18 @@ import (
 	"unsafe"
 )
 
+// SetScheduling sets scheduling option.
+func (c *Conn) SetScheduling(scheduling bool) {
+	c.scheduling = scheduling
+}
+
 // SetConcurrency sets a callback func concurrency for writer.
 func (c *Conn) SetConcurrency(concurrency func() int) {
+	if concurrency == nil {
+		return
+	}
 	c.writing.Lock()
-	c.writer = writer.NewWriter(c.writer, concurrency, 65536, false)
+	c.writer = writer.NewWriter(c.writer, concurrency, 65536, c.scheduling || c.shared)
 	c.writing.Unlock()
 }
 

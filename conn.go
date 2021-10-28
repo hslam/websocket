@@ -40,6 +40,7 @@ type Conn struct {
 	path            string
 	address         string
 	shared          bool
+	scheduling      bool
 	readBufferSize  int
 	readBuffer      []byte
 	writeBufferSize int

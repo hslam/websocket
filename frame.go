@@ -4,7 +4,6 @@
 package websocket
 
 import (
-	"github.com/hslam/buffer"
 	"io"
 	"math/rand"
 	"strings"
@@ -32,7 +31,6 @@ const (
 )
 
 var (
-	buffers   = buffer.NewBuffers(1024)
 	framePool = &sync.Pool{New: func() interface{} { return &frame{} }}
 )
 
