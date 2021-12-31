@@ -2,5 +2,5 @@ github.com/hslam/buffer v0.0.0-20211027181515-93d623f7e213 h1:0jr8x0IYeDlcIbFTlq
 github.com/hslam/buffer v0.0.0-20211027181515-93d623f7e213/go.mod h1:Gvbj40hnzR54zoUOuDZqDi7aziar8UlkHXk6NVYLg2U=
 github.com/hslam/scheduler v0.0.0-20211028175315-641598104976 h1:7xDxY7ffYQjS+eM6/7zSvvxrGowxHIwGWHM+drPp/XA=
 github.com/hslam/scheduler v0.0.0-20211028175315-641598104976/go.mod h1:5Lu1StnE7hhW2QwdImTNFLdzIUhAUjO7SlLco+H5h9A=
-github.com/hslam/writer v1.0.1-0.20211121144017-29d9085bf8cf h1:obbzNDkLes1+s3gNTBMgL316VxjTfPQUdsKXqcIvrLw=
-github.com/hslam/writer v1.0.1-0.20211121144017-29d9085bf8cf/go.mod h1:lKb5O05s9kAPwsbvfGV76wq813i5l6WT+FbucTHwThM=
+github.com/hslam/writer v1.0.1-0.20211230160120-6a2e0b21f68d h1:gkKWLMNpMVmNiEWsKNMBjPuUz21O+1iRzLedRzX6orE=
+github.com/hslam/writer v1.0.1-0.20211230160120-6a2e0b21f68d/go.mod h1:lKb5O05s9kAPwsbvfGV76wq813i5l6WT+FbucTHwThM=
