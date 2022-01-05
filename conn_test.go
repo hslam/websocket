@@ -41,6 +41,9 @@ func TestConn(t *testing.T) {
 		t.Error(err)
 	}
 	conn.SetScheduling(false)
+	conn.SetConcurrency(func() int {
+		return 1
+	})
 	conn.SetConcurrency(nil)
 	conn.SetConcurrency(func() int {
 		return 1
