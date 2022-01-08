@@ -269,6 +269,8 @@ func TestUpgradeHTTP(t *testing.T) {
 				netConn = tlsConn
 			}
 			conn := client(netConn, true, address, path)
+			conn.SetBufferedInput(bufferSize)
+			conn.SetBufferedOutput(bufferSize)
 			err = clientHandshake(conn)
 			if err != nil {
 				conn.Close()

@@ -5,31 +5,45 @@ package websocket
 
 import (
 	"errors"
+	"github.com/hslam/buffer"
 	"github.com/hslam/writer"
 	"unsafe"
 )
 
-// SetScheduling sets scheduling option.
-func (c *Conn) SetScheduling(scheduling bool) {
-	c.scheduling = scheduling
-}
-
-// SetConcurrency sets a callback func concurrency for writer.
-func (c *Conn) SetConcurrency(concurrency func() int) {
-	if concurrency == nil {
-		if w, ok := c.writer.(*writer.Writer); ok {
-			w.Close()
-		}
-		c.writing.Lock()
-		c.writer = c.conn
-		c.writing.Unlock()
-		return
-	}
+// SetBufferedOutput sets the buffered writer with the buffer size.
+func (c *Conn) SetBufferedOutput(writeBufferSize int) {
 	c.writing.Lock()
-	if _, ok := c.writer.(*writer.Writer); !ok {
-		c.writer = writer.NewWriter(c.writer, concurrency, 65536, c.scheduling || c.shared)
+	if w, ok := c.writer.(*writer.Writer); ok {
+		w.Close()
+	}
+	if writeBufferSize > 0 {
+		c.writer = writer.NewWriter(c.conn, writeBufferSize)
+	} else {
+		c.writer = c.conn
+		writeBufferSize = bufferSize
+	}
+	c.writeBufferSize = writeBufferSize
+	if c.shared {
+		c.writePool = buffer.AssignPool(writeBufferSize)
+	} else {
+		c.writeBuffer = make([]byte, writeBufferSize)
 	}
 	c.writing.Unlock()
+}
+
+// SetBufferedInput sets the read buffer size.
+func (c *Conn) SetBufferedInput(readBufferSize int) {
+	if readBufferSize < 1 {
+		readBufferSize = bufferSize
+	}
+	c.reading.Lock()
+	c.readBufferSize = readBufferSize
+	if c.shared {
+		c.readPool = buffer.AssignPool(readBufferSize)
+	} else {
+		c.readBuffer = make([]byte, readBufferSize)
+	}
+	c.reading.Unlock()
 }
 
 // ReceiveMessage receives single frame from ws, unmarshaled and stores in v.

@@ -40,14 +40,11 @@ func TestConn(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	conn.SetScheduling(false)
-	conn.SetConcurrency(func() int {
-		return 1
-	})
-	conn.SetConcurrency(nil)
-	conn.SetConcurrency(func() int {
-		return 1
-	})
+	conn.SetBufferedInput(0)
+	conn.SetBufferedInput(bufferSize)
+	conn.SetBufferedOutput(0)
+	conn.SetBufferedOutput(bufferSize)
+	conn.SetBufferedOutput(bufferSize)
 	{
 		if err := conn.SetDeadline(time.Now().Add(time.Minute)); err != nil {
 			t.Error()
