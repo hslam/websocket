@@ -107,6 +107,14 @@ func (w *response) WriteHeader(code int) {
 	w.status = code
 }
 
+func parseHost(address string) string {
+	serverName, _, err := net.SplitHostPort(address)
+	if err != nil {
+		return address
+	}
+	return serverName
+}
+
 // Dial opens a new client connection to a WebSocket.
 func Dial(network, address, path string, config *tls.Config) (*Conn, error) {
 	var err error
@@ -115,7 +123,9 @@ func Dial(network, address, path string, config *tls.Config) (*Conn, error) {
 		return nil, err
 	}
 	if config != nil {
-		config.ServerName = address
+		if config.ServerName == "" {
+			config.ServerName = parseHost(address)
+		}
 		tlsConn := tls.Client(netConn, config)
 		if err = tlsConn.Handshake(); err != nil {
 			tlsConn.Close()

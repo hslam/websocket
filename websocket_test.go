@@ -189,6 +189,24 @@ func TestUpgradeTLS(t *testing.T) {
 	}
 	l.Close()
 	wg.Wait()
+
+}
+
+func TestParseHost(t *testing.T) {
+	{
+		addr := "hslam.com:8080"
+		servername := parseHost(addr)
+		if servername != "hslam.com" {
+			t.Error()
+		}
+	}
+	{
+		addr := "hslam.com"
+		servername := parseHost(addr)
+		if servername != "hslam.com" {
+			t.Error()
+		}
+	}
 }
 
 func TestUpgradeHTTP(t *testing.T) {
