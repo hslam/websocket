@@ -157,7 +157,7 @@ func TestUpgradeTLS(t *testing.T) {
 			wg.Add(1)
 			go func() {
 				defer wg.Done()
-				ws, err := Upgrade(conn, testTLSConfig())
+				ws, err := Upgrade(conn, testServerTLSConfig())
 				if ws != nil && err == nil {
 					Serve(ws)
 				}

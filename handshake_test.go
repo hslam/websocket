@@ -29,7 +29,7 @@ func TestWSS(t *testing.T) {
 		Addr:    addr,
 		Handler: Handler(Serve),
 	}
-	l, _ := tls.Listen(network, addr, testTLSConfig())
+	l, _ := tls.Listen(network, addr, testServerTLSConfig())
 	var wg sync.WaitGroup
 	wg.Add(1)
 	go func() {
@@ -63,8 +63,8 @@ func TestWSS(t *testing.T) {
 	wg.Wait()
 }
 
-func testTLSConfig() *tls.Config {
-	tlsCert, err := tls.X509KeyPair(testCertPEM, testKeyPEM)
+func testServerTLSConfig() *tls.Config {
+	tlsCert, err := tls.X509KeyPair(testServerCertPEM, testServerKeyPEM)
 	if err != nil {
 		panic(err)
 	}
@@ -77,7 +77,7 @@ func testSkipVerifyTLSConfig() *tls.Config {
 
 func testClientTLSConfig() *tls.Config {
 	certPool := x509.NewCertPool()
-	if !certPool.AppendCertsFromPEM(testCertPEM) {
+	if !certPool.AppendCertsFromPEM(testrRootCertPEM) {
 		panic("failed to append certificates")
 	}
 	return &tls.Config{RootCAs: certPool, ServerName: "websocket.hslam.com"}
@@ -85,13 +85,13 @@ func testClientTLSConfig() *tls.Config {
 
 func test1ClientTLSConfig() *tls.Config {
 	certPool := x509.NewCertPool()
-	if !certPool.AppendCertsFromPEM(testCertPEM) {
+	if !certPool.AppendCertsFromPEM(testrRootCertPEM) {
 		panic("failed to append certificates")
 	}
 	return &tls.Config{RootCAs: certPool, ServerName: ""}
 }
 
-var testKeyPEM = []byte(`-----BEGIN RSA PRIVATE KEY-----
+var testServerKeyPEM = []byte(`-----BEGIN RSA PRIVATE KEY-----
 MIIEpAIBAAKCAQEAuGxK16Qu3IcyFb+yCcF4h2Dv7Dd2w2A3pF6iA7WFp08ald3C
 +bZqoSzcMPEdHPLJevk4TkWG8Qmas7pltFx/8OPlC5WRkz8p/xVtnsUmGsA3qo5b
 1NqXx/WRDypbo/eNZ5RDA0sFvwTD0kyu5KGOODRMfEyrHckl6SOgcfniEwNBs8Iw
@@ -120,7 +120,7 @@ kaQ1jFVjqVCbsyWBSNzterjpeMbxhd/18zzIYnULXGZS++szgSxHsw==
 -----END RSA PRIVATE KEY-----
 `)
 
-var testCertPEM = []byte(`-----BEGIN CERTIFICATE-----
+var testServerCertPEM = []byte(`-----BEGIN CERTIFICATE-----
 MIIDSzCCAjOgAwIBAgIURCOmhiGKFKK1oToePEo9e2VuPNMwDQYJKoZIhvcNAQEL
 BQAwPzELMAkGA1UEBhMCY24xDjAMBgNVBAsMBW15b3JnMQ8wDQYDVQQKDAZteXRl
 c3QxDzANBgNVBAMMBm15bmFtZTAgFw0yMjAxMTAxNTI1MjVaGA8yNTIxMDkxMTE1
@@ -139,5 +139,26 @@ vrAT/RzOo5+9XhV83PvZJYa2xRqHkh0juT2y6tMFkIEFjIyX+2DEUZ3tkVZscSt+
 o6NRuEAWdnyPfAcZMCDwS3hpIuJcVEwqRhqmtxpMwRY9+RMu7nbWgm5E3PfTLqOE
 RoJ7VLfEc0IKBHDW6XrY+D5/77AQg7ycDOrV/7i3Ha9JQNrPU/KpOayBg8o4hISL
 EJFzAVY7OzZhC50wZjqARgox65xW0Ns4AXClpzPi0Q==
+-----END CERTIFICATE-----
+`)
+
+var testrRootCertPEM = []byte(`-----BEGIN CERTIFICATE-----
+MIIDBzCCAe8CFHTcY0tl3SO+uhKaSJ2r0xxGSj5nMA0GCSqGSIb3DQEBCwUAMD8x
+CzAJBgNVBAYTAmNuMQ4wDAYDVQQLDAVteW9yZzEPMA0GA1UECgwGbXl0ZXN0MQ8w
+DQYDVQQDDAZteW5hbWUwIBcNMjIwMTEwMTUyNDU2WhgPMjUyMTA5MTExNTI0NTZa
+MD8xCzAJBgNVBAYTAmNuMQ4wDAYDVQQLDAVteW9yZzEPMA0GA1UECgwGbXl0ZXN0
+MQ8wDQYDVQQDDAZteW5hbWUwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIB
+AQDgKFk5/+SkaY+nd1elGPdJAAcihMhYZtsPo5s9fYCxMZgjySaL5Ueyzh64iEF/
+hxwLKYlgK/TNDhtj8ZHcBPuTVLemJ06R9Bx0YTwXm3pT0sjrkL7f4gQiNRjQ3taS
+SYwF+cKvG7jXwPRvG9O8gQTmiLbhfHxfujWwD7tXJEU00jA3cqCNgNxOPpamaqOa
+DFoxVXAxd0CgYY3jJHodUu18UWwufDVm0DI+qPwwzXNRl65nf/wxafW2B68qViP3
+mODh+05RVXrSN0NDh+AI3zwHVXU0S2jZfMuKPU0gNv1AGw61CpVFOvl4LK5qnZw/
+DoWJoutdID8ebWBBHp1Fe8ZRAgMBAAEwDQYJKoZIhvcNAQELBQADggEBAJ++Q8L2
+XkH+Nh9gQEXq0FnJvSEadL9TeVirDk/sPd40KvImKeOgfASZfQIJiv1j5NuxGfEf
+UL2OoQ/CYLGD6FgsM6uPtcZSN5zn2V/eKgZgUKR2hPHD0yNLK06KGKcPZacjPjag
+KS8oy4r4mny1QsbTHHPcTV3m5WjQFRSFIjCoYHUIiFIJ6elJYyHCkX9zt3C7jEIJ
+mYcNfhCPAlZdMExbUldgqBwZqvR2S2EOAEfsWQoakSJzu4u9nemFz7WBb30wd3Zn
+gxkf2m5HqKxP33Gqe1Q/nOjJasNNnQ9n1qHNkvyKReBpKpdKXEmzxGoowOEBg92h
+z45QURVAGlTYfOE=
 -----END CERTIFICATE-----
 `)
