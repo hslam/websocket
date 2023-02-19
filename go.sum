@@ -1,5 +1,6 @@
-github.com/hslam/buffer v0.0.0-20211027181515-93d623f7e213 h1:0jr8x0IYeDlcIbFTlq9MigsrlOCtqaI1xM+4UotacG4=
-github.com/hslam/buffer v0.0.0-20211027181515-93d623f7e213/go.mod h1:Gvbj40hnzR54zoUOuDZqDi7aziar8UlkHXk6NVYLg2U=
-github.com/hslam/scheduler v0.0.0-20211028175315-641598104976/go.mod h1:5Lu1StnE7hhW2QwdImTNFLdzIUhAUjO7SlLco+H5h9A=
-github.com/hslam/writer v1.0.1-0.20220108105338-c33900c250b4 h1:Vmk9UwTOkBEkFowT9uu/tkyFvjMML1q1Auv+LYkQd6I=
-github.com/hslam/writer v1.0.1-0.20220108105338-c33900c250b4/go.mod h1:lKb5O05s9kAPwsbvfGV76wq813i5l6WT+FbucTHwThM=
+github.com/hslam/buffer v0.0.0-20230217202846-e7b1b6ebf283 h1:HurKqAs9w/HX/Y+s/Ylt+64akEtYo1Kh2677c5v8628=
+github.com/hslam/buffer v0.0.0-20230217202846-e7b1b6ebf283/go.mod h1:Gvbj40hnzR54zoUOuDZqDi7aziar8UlkHXk6NVYLg2U=
+github.com/hslam/inproc v0.0.0-20210912032833-46957e53529f h1:DqKW18/u99Qin79RDhjRPmqkw9ZvQjOl5tmUiJhBDlo=
+github.com/hslam/inproc v0.0.0-20210912032833-46957e53529f/go.mod h1:UDfJZX2mkqDQFBK4P8oSuiM+PC08eis5Vvr0tvdhC3I=
+github.com/hslam/writer v1.0.1-0.20230219134043-3ef1105e8b6a h1:2gSI8BiGZG2wHFXk6no7Udjvqb/hGP4C+XMKryHCqOk=
+github.com/hslam/writer v1.0.1-0.20230219134043-3ef1105e8b6a/go.mod h1:w/e7kYkOHzzAvugoiMEtlL15d0sxpQnPNRYFnkl5UrQ=
