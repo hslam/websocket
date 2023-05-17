@@ -4,5 +4,5 @@ github.com/hslam/buffer v0.0.0-20230217202846-e7b1b6ebf283 h1:HurKqAs9w/HX/Y+s/Y
 github.com/hslam/buffer v0.0.0-20230217202846-e7b1b6ebf283/go.mod h1:Gvbj40hnzR54zoUOuDZqDi7aziar8UlkHXk6NVYLg2U=
 github.com/hslam/inproc v0.0.0-20210912032833-46957e53529f h1:DqKW18/u99Qin79RDhjRPmqkw9ZvQjOl5tmUiJhBDlo=
 github.com/hslam/inproc v0.0.0-20210912032833-46957e53529f/go.mod h1:UDfJZX2mkqDQFBK4P8oSuiM+PC08eis5Vvr0tvdhC3I=
-github.com/hslam/writer v1.0.1-0.20230515155550-db89e9b3a2c6 h1:syFzfbyvULHQwROZj2bPNwUxzYQOrZkUR4+ZSrehnSw=
-github.com/hslam/writer v1.0.1-0.20230515155550-db89e9b3a2c6/go.mod h1:XW8S3sn319cqKQ+TvpMPmLvbtoqNAYbeAh+IivvF9Ts=
+github.com/hslam/writer v1.0.1-0.20230517134517-171bf4321917 h1:lHnxHpE4fs1AGJGiIwTCgkJvUNOSU5/Iphua8A3kCQA=
+github.com/hslam/writer v1.0.1-0.20230517134517-171bf4321917/go.mod h1:XW8S3sn319cqKQ+TvpMPmLvbtoqNAYbeAh+IivvF9Ts=
